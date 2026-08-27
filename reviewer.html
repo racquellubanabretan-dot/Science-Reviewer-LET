@@ -111,7 +111,21 @@
         <span id="pageInfo">Page 1</span>
         <button id="nextBtn" onclick="changePage(1)">Next</button>
     </div>
-    
+        <!-- Pagination Controls -->
+    <div class="pagination">
+        <button id="prevBtn" onclick="changePage(-1)">Previous</button>
+        <span id="pageInfo">Page 1</span>
+        <button id="nextBtn" onclick="changePage(1)">Next</button>
+    </div> <!-- This is the closing div you found! -->
+
+    <!-- 1. PASTE THE NEW BUTTON AND MESSAGE BOX HERE: -->
+    <button id="finishQuizBtn" style="width: 100%; padding: 12px; font-size: 16px; font-weight: bold; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; margin-bottom: 10px;">Finish Quiz & View Feedback</button>
+
+    <div id="motivationalMessage" style="display: none; font-size: 16px; font-weight: bold; text-align: center; padding: 15px; margin-top: 10px; margin-bottom: 20px; border-radius: 6px; line-height: 1.5;"></div>
+
+    <!-- Your footer code starts right here -->
+    <footer style="text-align: center; margin-top: 40px; padding-top: 20px;">
+
     <footer style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc; color: #666; font-size: 14px;">
         <p>&copy; 2026 <strong>Racquel Awisi Abretan Luban</strong>. All Rights Reserved.</p>
         <p style="font-size: 11px; margin-top: 5px; color: #999;">Proprietary Question Bank Engine v1.2</p>
@@ -1307,6 +1321,40 @@ function checkAnswer(event, selected, correct, rationaleId) {
 
         // Initial Load
         renderQuestions();
+document.getElementById('finishQuizBtn').addEventListener('click', function() {
+  // Grab the scores from your existing counters
+  const finalScore = parseInt(document.getElementById('scoreCounter').innerText) || 0;
+  const finalAttempts = parseInt(document.getElementById('attemptCounter').innerText) || 0;
+  const messageBox = document.getElementById('motivationalMessage');
+
+  // Prevent calculation errors if they haven't answered anything
+  const percentage = finalAttempts > 0 ? (finalScore / finalAttempts) * 100 : 0;
+
+  // Automatically pick the right message based on performance
+  if (percentage >= 85) {
+    messageBox.innerText = "✨ Outstanding! You are well on your way to topnotching the LET! Keep it up, Future Licensed Professional Teacher! 👩‍🏫👨‍🏫";
+    messageBox.style.color = "#155724";
+    messageBox.style.backgroundColor = "#d4edda"; // Light Green
+    messageBox.style.border = "1px solid #c3e6cb";
+  } else if (percentage >= 75) {
+    messageBox.innerText = "🎉 Great job! You passed this reviewer! Keep refining your weak areas. Your LPT title is waiting for you! ✨";
+    messageBox.style.color = "#004085";
+    messageBox.style.backgroundColor = "#cce5ff"; // Light Blue
+    messageBox.style.border = "1px solid #b8daff";
+  } else {
+    messageBox.innerText = "💪 Don't give up! Every mistake is a lesson learned. Review your wrong answers and try again. You CAN pass the LET! 📖";
+    messageBox.style.color = "#721c24";
+    messageBox.style.backgroundColor = "#f8d7da"; // Light Red
+    messageBox.style.border = "1px solid #f5c6cb";
+  }
+
+  // Reveal the message box on screen
+  messageBox.style.display = "block";
+
+  // Hide the finish button so they can't spam it
+  this.style.display = "none";
+});
+
     </script>
 
 </body>
