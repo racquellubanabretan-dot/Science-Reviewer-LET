@@ -1,0 +1,1313 @@
+
+<!-- 
+  ========================================================================
+  APPLICATION NAME: Interactive Science Question Bank & Quiz Engine
+  AUTHOR: Racquel Awisi Abretan Luban
+  COPYRIGHT: © 2026 Racquel Awisi Abretan Luban. All Rights Reserved.
+  WARNING: Unauthorized copying, modification, or distribution of this 
+  source code and its 150 contained questions is strictly prohibited.
+  ========================================================================
+-->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Question Bank</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        #searchBar {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .question-box {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .options {
+            list-style-type: none;
+            padding: 0;
+        }
+        .options li {
+            margin: 10px 0;
+        }
+        .options a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .options a:hover {
+            text-decoration: underline;
+        }
+        .rationale {
+            display: none;
+            margin-top: 15px;
+            padding: 12px;
+            background: #e2f0d9;
+            border-left: 4px solid #385723;
+            border-radius: 4px;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid #0066cc;
+            background: white;
+            color: #0066cc;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .pagination button:disabled {
+            border-color: #ccc;
+            color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>📝 SCIENCE REVIEWER - RAAL</h2>
+
+<div style="background: #e2f0d9; padding: 12px; margin-bottom: 20px; border-radius: 6px; font-weight: bold; border: 1px solid #385723; color: #385723;">
+    Score Tracker: <span id="scoreCounter">0</span> / <span id="attemptCounter">0</span> answered correctly
+</div>
+    
+    <!-- Search Bar Controls -->
+    <div class="controls">
+        <input type="text" id="searchBar" placeholder="Search questions..." oninput="handleSearch()">
+    </div>
+
+    <!-- Container where JS will load the questions -->
+    <div id="quiz-container"></div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination">
+        <button id="prevBtn" onclick="changePage(-1)">Previous</button>
+        <span id="pageInfo">Page 1</span>
+        <button id="nextBtn" onclick="changePage(1)">Next</button>
+    </div>
+    
+    <footer style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc; color: #666; font-size: 14px;">
+        <p>&copy; 2026 <strong>Racquel Awisi Abretan Luban</strong>. All Rights Reserved.</p>
+        <p style="font-size: 11px; margin-top: 5px; color: #999;">Proprietary Question Bank Engine v1.2</p>
+    </footer>
+
+
+    <script>
+// Security: Prevents casual users from right-clicking or highlighting your test questions
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+document.addEventListener('keydown', function(e) {
+    // Blocks Ctrl+U (View Source) and Ctrl+Shift+I (Developer Tools)
+    if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+    }
+    if (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'c' || e.key === 'C')) {
+        e.preventDefault();
+    }
+});
+
+
+        // 1. DATA STORE: Paste your hundreds of questions here
+        const questionBank = [
+            {
+                id: 1,
+                question: "What is the monomer of carbohydrates?",
+                options: ["disaccharides", "glucose", "monosaccharides", "triose"],
+                correctAnswer: "monosaccharides",
+                rationale: "Monosaccharides are the monomers or building blcks of carbohydrates"
+            },
+            {
+                id: 2,
+                question: "What level of protein structure consists of linear chain of amino acid",
+                options: ["primary", "secondary", "tertiary", "quaternary"],
+                correctAnswer: "primary",
+                rationale: "primary structure is linear and held by covalent bond. seconadary structure is local, folded shapes that form within the polypeptide chain. Secondary structure includes the alpha-helix and beta-pleated sheet. tertiary structure is the overall three-dimensional shape of a single protein molecule. the tertiary structure is Formed by interactions between amino acid side chains (R-groups), including hydrogen bonds, ionic bonds, hydrophobic interactions, and covalent disulfide bridges. The quaternary structure is formed when two or more polypeptide chains (subunits) join together. Held together by the same noncovalent forces and disulfide bonds found in tertiary structures. Example is the  Hemoglobin, which contains four individual protein subunits working as one unit"
+	    },
+            {
+               id: 3,
+                question: "The  first stage in cellular respiration is ",
+                options: ["pyruvate oxidation", "glycolysis", "oxidative phosphorylation", "TCA cycle"],
+                correctAnswer: "glycolysis",
+                rationale: "cellular respiration starts with Glycolysis (net gain of 2 ATP and 2 NADH). In order glycolysis followed by , pyruvate oxidation (produces 2 NADH-one per pyruvate molecule), the citric acid cycle or Krebs cycle produces 2 ATP, 6 NADH, 2 FADH2 per glucose molecule, and oxidative phosphorylation or electron transport chain that produces 30 to 32 ATP per molecule of glucose"
+            },
+            {
+                id: 4,
+                question: "Which of the following does not belong to the group?",
+                options: ["blue-green algae", "purple sulfur bacteria", "plants", "fungi"],
+                correctAnswer: "fungi",
+                rationale: "fungi are incapable of photosynthesis because they lack chloroplasts. the rest can perform phoyosynthesis"
+	    },
+            {
+                 id: 5,
+                question: "What specialized field in biology enables us to understand how blood flows through the body?",
+                options: ["cytology", "histology", "morphology", "physiology"],
+                correctAnswer: "physiology",
+                rationale: "Cytology is the study of cells. Morphology  is the study of the shape, structure, and physical form of organisms and their specific parts. Histology is the study of tissues."
+	    },
+            {
+               id: 6,
+                question: "What characteristic of living things is shown by Mimosa pudica (makahiya) when its leaflets fold upward when touched?",
+                options: ["adaptation", "development", "growth", "irritability"],
+                correctAnswer: "irritability",
+                rationale: "This specific movement from touch is called thigmonasty or seismonasty.The plant does this because of Water Pressure:Special cells at the base of the leaves lose water pressure very fast when touched. Protection: The sudden folding makes the plant look shriveled or dead, which scares away hungry animals and insects. Recovery: The leaves slowly open back up after a few minutes once it is safe."
+            },
+            {
+                id: 7,
+                question: "Why is water important in the process of photosynthesis?",
+                options: ["it is by-products on the process of photosynthesis", "water depletes electron and releases O2", "water replenishes electron needed for the NADPH", "water is oxidized to produce glucose"],
+                correctAnswer: "water replenishes electron needed for the NADPH",
+                rationale: "in photosynthesis, water is a raw material used to replenishes electron needed for the NADPH"
+            },
+	    {
+ 	        id: 8,
+                question: "Which type of lipids is a biological component of the cell membrane?",
+                options: ["phospholipids", "fats", "waxes", "steroids"],
+                correctAnswer: "phospholipids",
+                rationale: "Phospholipids: These form the core fabric of the membrane. Each molecule has a water-loving (hydrophilic) head and two water-fearing (hydrophobic) tails. They line up in two layers with heads facing outward and tails pointing inward"
+ 	    },
+	    {
+                 id: 9,
+                question: "These are found on the surface of thylakoids used in the light dependent reaction of photosynthesis, EXCEPT",
+                options: ["Photosystem I", " Photosystem II", "ATP Synthase", "RuBP"],
+                correctAnswer: "RuBP",
+                rationale: "Photosystems (Photosystem I and Photosystem II) and ATP synthase are the key structures found on the surface of thylakoid membranes for the light-dependent reactions."
+	    },
+            {
+                id: 10,
+                question: "Which is NOT a form of asexual reproduction?",
+                options: ["budding", "fission", "fragmentation", "conjugation"],
+                correctAnswer: "conjugation",
+                rationale: "Conjugation is a sexual process where two single-celled organisms connect and trade genetic material to create new gene combinations."
+	    },
+            {
+		id: 11,
+                question: "Chemical factories found in plants and are poered by the sun.",
+                options: ["chlorophyll", "chloroplasts", " mesophyll", "thylakoids"],
+                correctAnswer: "chloroplasts",
+                rationale: "Chloroplasts are the microscopic chemical factories inside plant cells that are powered by the sun."
+            },
+            {
+                id: 12,
+                question: "It is the sum of all chemical processes in living things",
+                options: ["adaptation", "growth", "metabolism", "synthesis"],
+                correctAnswer: "metabolism",
+                rationale: "The sum of all chemical processes in living things is called metabolism."
+            },
+            {
+                id: 13,
+                question: "Which of the following is a form of sexual reproduction?",
+                options: ["budding", "union of gametes", "fission", "spore formation"],
+                correctAnswer: "union of gametes",
+                rationale: "union of gametes is called fertilization, which is the core defining process of sexual reproduction."
+            },
+	    {
+                id: 14,
+                question: "WWhich of the following is NOT part of the nucleus of an atom?",
+                options: ["electron", "proton", "neutron", "positively charged particle"],
+                correctAnswer: "electron",
+                rationale: "The nucleus of an atom contains protons and neutrons."
+	    },
+            {
+                id: 15,
+                question: "Why do isotopes have different masses even if they are of the same element?",
+                options: ["because of different number of electron", "because of different number of proton", "because of different number of neutron", "because of different no. of proton and neutron"],
+                correctAnswer: "because of different number of neutron",
+                rationale: "Isotopes have different masses because they have the same number of protons but a different number of neutrons in their nuclei."
+	    },
+	    {
+ 	 	id: 16,
+                question: "Chemical reaction  between an acid and a base is called",
+                options: ["combination", "dehydration", "neutralization", "synthesis"],
+                correctAnswer: "neutralization",
+                rationale: "In chemistry, neutralization is a reaction where an acid and a base mix and cancel each other out. They react to form water and an ionic compound called a salt."
+            },
+            {
+                id: 17,
+                question: "Also known as fruit sugar",
+                options: ["glucose", "fructose", "galactose", "sucrose"],
+                correctAnswer: "fructose",
+                rationale: "Glucose is also known as dextrose, blood sugar, or corn sugar. It is the main source of energy for living cells. Galactose: Often called brain sugar because it is a key part of brain glycolipids. It combines with glucose to form milk sugar (lactose). Sucrose is table sugar. Ribose: A crucial pentose sugar used to form the backbone of RNA. Deoxyribose: A modified pentose sugar that forms the backbone of DNA." 
+            },
+            {
+                id: 18,
+                question: "The basic units of protein molecules",
+                options: ["amino acids", "nucleic acids", "fatty acids", "enzymes"],
+                correctAnswer: "amino acids",
+                rationale: "Amino acids (there are 20 different kinds). Nucleic acid is a macromolecule having nucleotides as its building-block or monomer. Fatty acid, together with glycerol, is the building block of lipids."
+            },
+	    {
+                id: 19,
+                question: "Key light-capturing pigment that participates directly in light reactions",
+                options: ["black pigment", "carotenoids", "chlorophyll b", "chlorophyll a"],
+                correctAnswer: "chlorophyll a",
+                // FIXED: Added space in "Chlorophyll a is the main..."
+                rationale: "Chlorophyll a is the main green pigment. It absorbs blue-violet and red light best. It drives the core light reactions of photosynthesis. Chlorophyll b: A green accessory pigment. It absorbs blue and red-orange light. It helps broaden the range of light a plant can use. Carotenoids: Red, orange, or yellow pigments. This group includes carotenes and xanthophylls.They absorb blue-green light and protect the plant from too much light energy by turning it into heat."
+	    },
+            {
+                id: 20,
+                question: "Reaction-center complex associated with light-harvesting complexes",
+                options: ["light reaction", "dark reaction", "photosystem", "action spectrum"],
+                correctAnswer: "photosystem",
+                rationale: "A photosystem is a large protein and pigment complex found in chloroplasts. It captures sunlight and uses that light energy to power the first steps of photosynthesis."
+	    },
+            {
+		id: 21,
+                question: "This is a complex carbohydrate found in cell wall of plants and are commercially used in paper-making",
+                options: ["cellulose", "chitin", "glycogen", "starch"],
+                correctAnswer: "cellulose",
+                rationale: "Cellulose, chitin, and starch are all polysaccharides, which are large carbohydrate molecules made of smaller sugar units linked together. Starch Acts as an energy storage molecule in plants.Made of alpha-glucose units.Forms coiled, helical, and often branched chains (amylose and amylopectin) that save space and break down easily.Found in plants like potatoes, rice, and corn. Cellulose  provides rigid structural support for plant cell walls.  Made of beta-glucose units with alternating 180-degree flips.Forms straight, unbranched chains that lock tightly together with hydrogen bonds into strong microfibrils. Found in green plants, wood, and cotton; humans cannot digest it, so it acts as dietary fiber. Chitin Provides tough structural support and protection. Made of modified beta-glucose containing a nitrogen group (N-acetylglucosamine). Forms long, straight, unbranched chains similar to cellulose, reinforced by extra hydrogen bonding from its nitrogen side chains. Found in the exoskeletons of insects and crustaceans, as well as fungal cell walls. Glycogen is the energy storage in animals, made of alpha glucose (building block, bond between monomers are alpha 1-4 and alpha 1-6 glycosidic bond (same bonds are gound in starch)."
+            },
+            {
+                id: 22,
+                question: "Diffusion of a substance across a membrane with no energy investment",
+                options: ["Passive transport", "Osmosis", "Active Transport", "Facilitated diffusion"],
+                correctAnswer: "Passive transport",
+                rationale: "Cell membrane transport mechanisms move vital molecules in and out of cells. Passive transport moves substances down a concentration gradient without using energy. Active transport uses cellular energy (ATP) to move substances against a gradient. Bulk transport moves large items via vesicles"
+            },
+            {
+                id: 23,
+                question: "The Na+/K+ pump is an example of?",
+                options: ["Passive transport", "Osmosis", "Active Transport", "Facilitated diffusion"],
+                correctAnswer: "Active Transport",
+                rationale: "the sodium-potassium pump is a primary example of an active transport mechanism.  It moves sodium ions (\(Na^{+}\)) out of the cell and potassium ions (\(K^{+}\)) into the cell, going from areas of low concentration to high concentration. It requires chemical energy directly from splitting an ATP molecule."
+            },
+	                {
+                id: 24,
+                question: "Also known as anchoring junctions?",
+                options: ["Tight junctions", "Desmosomes", "Gap junctions", "loose junctions"],
+                correctAnswer: "Desmosomes",
+                // FIXED: Escaped the inner double quotes around "spot welds" using \
+                rationale: "cell junction is a specialized structure made of proteins that connects neighboring cells to each other or links a cell to the extracellular matrix (the supportive material outside cells). These structures are most common in epithelial tissues, such as the lining of gut or skin, where they help hold tissues together and coordinate how cells function. Tight Junctions (Occluding Junctions) form a waterproof seal between adjacent cells. The outer layers of the cell membranes fuse together. This stops fluid, water, and ions from leaking through the spaces between cells. they are foundin epithelial linings, like the gut or the blood-brain barrier. Anchoring Junctions fasten cells to one another or to the underlying matrix, providing strong mechanical strength.Types include:Adherens junctions: Connect actin filaments of neighboring cells to resist stretching.Desmosomes: Act like sturdy \"spot welds\" that tie intermediate filaments of neighboring cells together, common in skin and heart muscle.Hemidesmosomes: Look like half-desmosomes and anchor a cell down to the basal lamina (extracellular matrix). Communicating Junctions (Gap Junctions) act as tiny fluid-filled tunnels or channels between cells. They let ions, water, and small signaling molecules pass directly from the inside of one cell into the next.they are found n heart muscle and certain neurons, where cells need to share electrical signals very quickly.Note: Plants use a similar structure called plasmodesmata to connect cells."
+       	    },
+                       {
+                id: 25,
+                question: "Convoluted infoldings found inside the powerhouse of the cell",
+                options: ["Cristae", "Thylakoids", "Stroma", "Cisternae"],
+                correctAnswer: "Cristae",
+                rationale: "Cristae are folds in the inner membrane of a mitochondrion (the \"powerhouse\" of the cell) that greatly increase its surface area.A thylakoid is a membrane-bound, sac-like compartment inside plant chloroplasts and cyanobacteria where the light-dependent reactions of photosynthesis take place. Stroma is the dense, colorless fluid filling the inner space surrounding the thylakoid membranes where sugar-building reactions (the Calvin cycle) take place. Cisternae are flattened, membrane-bound sacs found inside cells and certain bodily cavities that store and transport fluids or proteins."
+            },
+	    {
+ 	 	id: 26,
+                question: "Gives flowers and fruits their orange and yellow hues",
+                options: ["Chloroplast", "Chromoplast", "Plastids", "Amyloplast"],
+                correctAnswer: "Chromoplast",
+                rationale: "Plastids are double-membrane organelles found in the cells of plants and algae. They make and store food, contain their own DNA, and handle key tasks like photosynthesis and pigment synthesis. An amyloplast is a colorless, double-membrane-bound organelle found in plant cells that specializes in making and storing starch. It belongs to a group of non-pigmented plastids known as leucoplasts. A chromoplast is a type of colored plastid found in plant cells that makes and stores yellow, orange, and red pigments. These tiny cell parts give bright colors to ripe fruits, flower petals, and autumn leaves. They help plants attract bugs and animals for pollination and seed spreading. A chloroplast is a specialized part inside plant and algae cells that turns sunlight into food through photosynthesis"
+            },
+            {
+                id: 27,
+                question: " Large motor proteins involved in flagella and cilia bending.",
+                options: ["Dyneins", "Myosin", "Integrins", "Fibronectins"],
+                correctAnswer: "Dyneins",
+                rationale: "Dyneins are large cytoskeletal motor proteins that convert chemical energy from ATP into mechanical movement along cellular tracks called microtubules."
+            },
+            {
+                id: 28,
+                question: "Which of the following does not belong to the group",
+                options: ["UAG", "UGA", "UAA", "AUG"],
+                correctAnswer: "AUG",
+                rationale: "UAG, UGA, UAA are the three stop codons in messenger RNA (mRNA)"
+            },
+	                {
+                id: 29,
+                question: "Bulk transport mechanism wherein cells take in molecules by forming new vesicles from plasma membrane",
+                // FIXED: Added missing opening quote before Exocytosis
+                options: ["Endocytosis", "Phagocytosis", "Pinocytosis", "Exocytosis"],
+                correctAnswer: "Endocytosis",
+                // FIXED: Escaped the inner quotes around \"cell drinking\" and closed the brace
+                rationale: "Endocytosis is an active transport process where a living cell brings substances from the outside into its interior by folding its outer membrane inward to swallow them. Phagocytosis is  cellular process where a cell engulfs and digests large solid particles or invading pathogens.Pinocytosis is a cellular process where a cell swallows liquid and small dissolved nutrients from its outside environment. People often call it \"cell drinking\". It is a type of endocytosis, which means the cell uses its outer membrane to bring items inside. Exocytosis is the cellular process of moving materials from inside a cell to the outside environment by fusing a small sac (vesicle) with the outer cell membrane."
+	    },
+            {
+                id: 30,
+                question: "Property of water that helps counter the downward pull of gravity",
+                options: ["Surface tension", "Temperature moderation", "Cohesion", "Adhesion"],
+                correctAnswer: "Adhesion",
+                rationale: "Capillary action, powered by adhesion and cohesion, is the property that helps water move upward against the pull of gravity.Adhesion-Water molecules stick to the sides of a narrow tube or plant vessel, pulling the water edges upward. Cohesion-Water molecules stick to each other. This holds the water column together so it does not break apart as it rises."
+            }, 
+                     {
+                id: 31,
+                question: "Amount of heat that must be absorbed or lost for 1 gram of a substance to change its temperature by 1 °C.",
+                options: ["Calorie", "specific heat", "heat of vaporization", "kilocalorie"],
+                correctAnswer: "specific heat",
+                rationale: "Specific heat measures how resistant a material is to changing its temperature when it gains or loses heat. Commonly expressed in Joules per gram per degree Celsius or calories per gram per degree Celsius. A calorie is a unit of measurement used to express the amount of energy stored in food and used by the body. heat of vaporization is the specific amount of heat energy needed to turn a liquid into a gas or vapor at a constant temperature and pressure. During this phase change, the added energy breaks the bonds holding the liquid molecules together rather than making the substance hotter. A kilocalorie (kcal) is the amount of heat energy needed to raise the temperature of one kilogram of water by one degree Celsius (°C)."      
+            },
+            {
+                id: 32,
+                question: "What is the largest planet in our solar system?",
+                options: ["Saturn", "Earth", "Jupiter"],
+                correctAnswer: "Jupiter",
+                rationale: "Jupiter is the largest planet in our solar system, with a mass more than two and a half times that of all the other planets combined. It is a gas giant primarily made of hydrogen and helium."
+            },
+
+            {
+                id: 33,
+                question: "Second most abundant carbohydrate",
+                options: ["cellulose", "chitin", "pectin", "starch"],
+                correctAnswer: "chitin",
+                rationale: "Chitin is widely considered the second most abundant carbohydrate (and polysaccharide) in nature, coming right after cellulose. (Note: In some botanical or agricultural contexts, starch is also referenced as the second most abundant plant carbohydrate after cellulose, but chitin holds the title globally across the entire biosphere/animal and fungal kingdoms.)."
+            },
+	    {
+                id: 34,
+                question: "The cellular particles are often referred by their sedimentation coefficient value, for example, 70s ribosomes that is expressed in terms of 10-13 seconds. The abbreviation “s” stands for",
+                options: ["subunit", "Seconds", "subunit/second", "Svedberg"],
+                correctAnswer: "Svedberg",
+                rationale: "Svedberg is a non-SI metric unit used for sedimentation rate in an ultracentrifuge. One Svedberg equals exactly \(10^{-13}\) seconds. It is named after the Swedish chemist and Nobel laureate The Svedberg, who invented the ultracentrifuge."
+	    },
+            {
+                id: 35,
+                question: "These organelles consist of membranous sacs containing powerful oxidase enzymes, and they use molecular oxygen (O2) to detoxify harmful substances",
+                options: ["Nuclear membrane", "peroxisomes", "lysosomes", "Mitochondria"],
+                correctAnswer: "peroxisomes",
+                rationale: "Peroxisomes are small sacs bound by a single membrane.  They contain oxidase enzymes that use oxygen to break down poisons like alcohol and formaldehyde. Their chemical reactions create hydrogen peroxide, which an enzyme called catalase turns into harmless water and oxygen.  They are most common in liver and kidney cells because those organs clean the body. A lysosome is a membrane-bound cell organelle that contains digestive enzymes to break down waste and macromolecules. Surrounded by a single phospholipid layer that protects the rest of the cell from its strong digestive chemicals."
+	    },
+	    {
+ 	 	id: 36,
+                question: "Viruses are not cellular, but are rather termed as biological entities. The reason why viruses are considered acellular entities is because",
+                options: ["A virus is very small compared to bacteria", "A virus is pathogenic", "Scientists cannot classify viruses under the 5 kingdoms of Whittaker", "they lack a true cellular structure, including a cell membrane, cytoplasm, and the internal machinery required to generate energy or reproduce independently"],
+                correctAnswer: "they lack a true cellular structure, including a cell membrane, cytoplasm, and the internal machinery required to generate energy or reproduce independently",
+                rationale: "they lack a true cellular structure, including a cell membrane, cytoplasm, and the internal machinery required to generate energy or reproduce independently."
+            },
+            {
+                id: 37,
+                question: "These are small, extrachromosomal circular DNA molecules found in prokaryotes",
+                options: ["Nucleoli", "Genes", "Plasmids", "Histones"],
+                correctAnswer: "Plasmids",
+                rationale: "A plasmid is a small, double-stranded, circular DNA molecule that is separate from a cell's chromosomal DNA. They can replicate on their own, completely independent of the main chromosomal DNA. Histones are basic proteins that package and order DNA into structural units called nucleosomes. A gene is the basic physical and functional unit of heredity made up of DNA. Nucleoli are the plural form of the nucleolus, which are small, dense structures located inside a cell's nucleus that create and assemble the parts needed to make proteins."
+            },
+            {
+                id: 38,
+                question: "Which of the following statements is/are true of prions?",
+                options: ["A prion is an infectious agent that contains both proteins and nucleic acids", "The disease bovine spongiform encephalopathy or mad cow disease is one disease attributed to prions", "Both statements are correct", "Both statements are false"],
+                correctAnswer: "The disease bovine spongiform encephalopathy or mad cow disease is one disease attributed to prions",
+                rationale: "A prion is a misshapen protein that lacks genetic material. It forces normal proteins in the body to fold the wrong way. This buildup damages the brain and causes fatal, untreatable diseases. They do not contain genes. They cannot reproduce on their own. They spread by changing normal proteins into bad ones. Standard methods that kill bacteria or viruses (like heat or radiation) do not destroy them"
+            },
+	    {
+                id: 39,
+                question: "Which of the following is a cross-linked, multi-layered polysaccharide complex used as the basis of Gram staining?",
+                options: ["peptidoglycan", "nucleic acid", "ergosterol", "phospholipids"],
+                correctAnswer: "peptidoglycan",
+                rationale: "Peptidoglycan is the cross-linked, multi-layered polymer that forms the basis of Gram staining"
+	    },
+            {
+                id: 40,
+                question: "Which of the following is not a biopolymer?",
+                options: ["Nucleic acids", "Carbohydrates", "Proteins", "Lipids"],
+                correctAnswer: "Lipids",
+                rationale: "Lipids are not considered true polymers because they lack a repeating chain of identical or similar subunits (monomers)."
+	    },
+            {
+		id: 41,
+                question: "Which of the following statements is/are correct?",
+                options: ["Adenine is a nucleoside (nitrogenous base)", "Adenosine is a nucleotide (nucleoside)", "Nucleotides are also known s nucleoside phosphates", "All of the above"],
+                correctAnswer: "Nucleotides are also known s nucleoside phosphates",
+                rationale: "adenine is just a nitrogenous base, not a nucleoside.Adenosine is nucleoside and not a nucleotide because it lacks a phosphate group."
+            },
+            {
+                id: 42,
+                question: "Which of the following nitrogenous basses is present only in DNA?",
+                options: ["Adenine", "Thymine", "Cytosine", " Uracil"],
+                correctAnswer: "Thymine",
+                rationale: "DNA contains four primary nitrogenous bases: adenine (A), thymine (T), cytosine (C), and guanine (G). Purines (Double-Ring Structures)Adenine (A)Guanine (G). Pyrimidines (Single-Ring Structures)Cytosine (C)Thymine (T)"
+            },
+            {
+                id: 43,
+                question: "This structure of peptides refer to the order of amino acids in the polypeptide chain and the location of the disulfide bonds",
+                options: ["Primary", "Secondary", "Tertiary", "Quaternary"],
+                correctAnswer: "Primary",
+                rationale: "linear"
+            },
+	    {
+                id: 44,
+                question: "This refers to the spatial arrangements of amino acid residues close to one another in the linear sequence of a polypeptide chain.",
+                options: ["Primary", "Secondary", "Tertiary", "Quaternary"],
+                correctAnswer: "Secondary",
+                rationale: "the local, repetitive folding patterns of a polypeptide chain's backbone, stabilized by hydrogen bonds."
+	    },
+            {
+                id: 45,
+                question: "The overall arrangement and interrelationship of various regions or domains, and individual amino acid residues of a single polypeptide chain",
+                options: ["Primary", "Secondary", "Tertiary", "Quaternary"],
+                correctAnswer: "Tertiary",
+                rationale: " It is the unique, overall three-dimensional shape of a single polypeptide chain."
+	    },
+	    {
+ 	 	id: 46,
+                question: "α-helix and β-pleated sheets belong to what protein structure?",
+                options: ["Primary", "Secondary", "Tertiary", "Quaternary"],
+                correctAnswer: "Secondary",
+                rationale: "The alpha -helix and beta -pleated sheets belong to the secondary structure of a protein.alpha -helix  A spring-like, coiled shape held together by hydrogen bonds between every fourth amino acid. beta -pleated sheet (Beta Sheet): A folded, accordion-like or zigzag pattern where adjacent strands connect via hydrogen bonds"
+            },
+            {
+                id: 47,
+                question: "Fibrous and globular proteins belong to what protein structure?",
+                options: ["Primary", "Secondary", "Tertiary", "Quaternary"],
+                correctAnswer: "Tertiary",
+                rationale: "Fibrous Proteins:Have a long, strand-like, or elongated shape.Mostly dominated by a repetitive secondary structure (like alpha-helices or beta-sheets) bundled into strong fibers.Generally insoluble in water.Examples include keratin, collagen, and elastin. Globular Proteins:Have a compact, rounded, or spherical shape.Fold complexly into a distinct 3D tertiary structure (or quaternary structure if multiple subunits join).Generally soluble in water because hydrophilic (water-loving) amino acids face outward.Examples include hemoglobin, myoglobin, and various enzymes"
+            },
+            {
+                id: 48,
+                question: "The arrangement of polypeptide chains in relation to one another in a multi-chained protein refers to what structure?",
+                options: ["Primary", "Secondary", "Tertiary", "Quaternary"],
+                correctAnswer: "Quaternary",
+                rationale: "Quaternary structure: How two or more separate polypeptide chains (called subunits) fit together to form a single, functioning protein complex. An example of a protein with a quaternary structure is hemoglobin, which contains four protein subunits working together to carry oxygen in your blood."
+            },
+	    {
+                id: 49,
+                question: "Which of the following protein structures remain unaffected with denaturation?",
+                options: ["Primary", "Secondary", "Tertiary", "Quaternary"],
+                correctAnswer: "Primary",
+                rationale: "The primary structure of a protein remains completely unaffected and intact during denaturation. Denaturation is a process where a protein loses its native, functional three-dimensional shape due to external stress. Common causes of denaturation include Drastic shifts in pH (acids or bases), Exposure to chemicals or detergents, Exposure to chemicals or detergents. When a protein denatures, it unfolds and loses its biological activity, but it does not break apart into individual amino acids. The secondary, tertiary, and quaternary structures rely heavily on relatively weak, non-covalent chemical interactions (like hydrogen bonding and hydrophobic packing) which are easily disrupted by heat or pH changes.In contrast, the primary structure is held together by covalent peptide bonds linking the amino acids. Covalent bonds are highly stable and require specific chemical catalysts (like digestive enzymes) or extreme acid hydrolysis to break. Because regular denaturing agents lack the energy required to cleave these strong covalent bonds, the baseline amino acid sequence remains perfectly preserved."
+	    },
+            {
+                id: 50,
+                question: "These are slightly longer, catalytically inactive forms of enzymes",
+                options: ["Apoenzyme", "Zymogen", "Holoenzyme", "Trypsinogen"],
+                correctAnswer: "Zymogen",
+                rationale: "A zymogen, also called a proenzyme, is an inactive form of an enzyme. It needs a chemical change—like cutting a piece off its chain—to wake up and do its job. The body uses zymogens to stop powerful enzymes from chewing up and destroying the exact cells that make them. An apoenzyme is the inactive protein part of an enzyme. It needs a non-protein helper, called a cofactor, to work. By itself, an apoenzyme cannot speed up chemical reactions. a complete, working enzyme made by combining an inactive protein part with a non-protein helper molecule. Trypsinogen is an inactive protein made by the pancreas that travels to the small intestine to help digest food"
+	    },
+            {
+		id: 51,
+                question: "These are proteins that help speed up chemical processes in the body",
+                options:  ["antibodies", "receptors", "enzymes", "hormones"],
+                correctAnswer: "enzymes",
+                rationale: "Enzymes are biological molecules—usually large proteins—that act as catalysts to speed up chemical reactions in living things."
+            },
+            {
+                id: 52,
+                question: "This class of immunoglobulin is produced during the early response to invading organisms. It has a relatively large size that restricts its transport in the bloodstream.",
+                options: ["IgG", "IgM", " IgD", "IgA"],
+                correctAnswer: "IgM",
+                rationale: "Immunoglobulins, also known as antibodies, are specialized proteins made by your immune system to find and destroy harmful invaders like bacteria and viruses. IgG: This is the most common type in your blood. It provides long-term protection against past infections and is the only type that can pass from a mother to her baby. IgA: This type protects the linings of your breathing and digestive systems. You find it in saliva, tears, and breast milk.IgM: This is the first antibody your body makes when a new germ attacks. It gives fast, short-term defense.IgE: This type triggers allergic reactions and helps fight off parasites.IgD: This type is found mostly on the surface of immature immune cells. Its exact role is still largely unknown"
+            },
+            {
+                id: 53,
+                question: " This is the most abundant immunoglobulin in the blood. Together with IgM, it is capable of triggering the immune system.",
+                options: ["IgG", "IgM", " IgD", "IgA"],
+                correctAnswer: "IgG",
+                rationale: "Abundance: It makes up about 75% to 80% of all antibodies in your blood and body fluids.Immune Defense: It protects your body against bacterial and viral infections.Complement System: It teams up with IgM to activate the complement system, a group of proteins that destroy harmful invaders.Long-Term Memory: It stays in your body for a long time to remember past infections and vaccines."
+            },
+	    {
+                id: 54,
+                question: "This immunoglobulin is responsible for mediating hypersensitivity by causing the release of mediators from mast cells and basophils upon exposure to antigens or allergens",
+                options: ["IgG", "IgM", " IgD", "IgE"],
+                correctAnswer: "IgE",
+                rationale: ""
+	    },
+                      {
+                id: 55,
+                question: "This immunoglobulin prevents the attachment of bacteria and viruses to mucous membranes. It is found in body secretions such as tears, colostrum, saliva, sweat, and small intestines",
+                // FIXED: Fixed the broken quotes around "IgA" and removed the leading space in "IgD"
+                options: ["IgG", "IgA", "IgD", "IgE"],
+                correctAnswer: "IgA",
+                // FIXED: Added the educational rationale
+                rationale: "IgA (Immunoglobulin A) is the primary antibody found in mucous membranes and body secretions like saliva, tears, and colostrum, protecting body surfaces from foreign invaders. IgG is the most abundant blood antibody. IgD acts mainly as an antigen receptor on B cells. IgE triggers allergic reactions and fights parasitic infections."
+	    },
+	    {
+                id: 56,
+                question: "This immunoglobulin is capable of crossing the placenta",
+                // FIXED: Fixed the broken quotes around "IgA" and removed the leading space in "IgD"
+                options: ["IgG", "IgA", "IgD", "IgE"],
+                correctAnswer: "IgG",
+                // FIXED: Added the educational rationale
+                rationale: "IgG (Immunoglobulin G) is the only class of immunoglobulin that can cross the placenta, providing passive immunity to the developing fetus. IgA protects mucous membranes. IgD is involved in B-cell activation. IgE is responsible for immediate hypersensitivity reactions (allergies)."
+            },
+
+            {
+                id: 57,
+                question: "This is also known as protein-calorie malnutrition. It is a state resulting from chronic deficiency of calories, which can occur even in the presence of adequate intake of proteins",
+                options:  ["marasmus", "obesity", "hemochromatosis", "Kwashiorkor"],
+                correctAnswer: "marasmus",
+                rationale: " It results from a severe and chronic lack of total calories and all major nutrients (carbohydrates, fats, and proteins. Physical Wasting: Patients exhibit extreme muscle wasting, severe weight loss, and a shriveled, skeletal appearance without notable fluid retention (edema), Difference from Kwashiorkor: Unlike kwashiorkor—which is driven primarily by a specific lack of protein despite adequate calorie intake—marasmus is a total caloric deficiency"
+            },
+            {
+                id: 58,
+                question: "The digestion of proteins begins in the?",
+                options: ["mouth", "stomach", "small intestines", "pancreas"],
+                correctAnswer: "stomach",
+                rationale: "Chemical digestion of protein begins in the stomach, where stomach acid and the enzyme pepsin break large proteins into smaller peptide chains. Mechanical chewing starts in the mouth, but true chemical breakdown of proteins does not occur until the food reaches the stomach"
+            },
+	    {
+                id: 59,
+                question: "This is the main pathway for carbohydrate catabolism in all human tissues",
+                options: ["glycolysis", "glycogenolysis", "fructose catabolism", "galactose catabolism"],
+                correctAnswer: "glycolysis",
+                rationale: "Glycolysis is the main pathway for carbohydrate catabolism in all human tissues"
+	    },
+            {
+                id: 60,
+                question: "Among the different cells in the body, only these lack mitochondria, which renders them incapable of TCA",
+                options: ["platelets", "leukocytes", "erythrocytes", "brain cells"],
+                correctAnswer: "erythrocytes",
+                rationale: "Among the different cells in the body, only erythrocytes (red blood cells) lack mitochondria, which renders them incapable of the tricarboxylic acid (TCA) cycle."
+ 	    },
+            {
+                id: 61,
+                question: "The human papilloma virus is the causative agent of",
+                options: ["measles", "Chancre", "warts", "herpes"],
+                correctAnswer: "warts",
+                rationale: "Human Papillomavirus directly causes various types of warts, including common skin warts and genital warts (condylomata acuminata). Measles is caused by the Measles virus. The scientific name of the measles virus is Measles morbillivirus (formerly Morbillivirus hominis), commonly referred to as the measles virus (MeV). Chancre is the primary painless sore characteristic of syphilis, which is caused by the bacterium Treponema pallidum.Herpes: Caused by the Herpes Simplex Virus (HSV-1 or HSV-2)"
+            },
+	    {
+                id: 62,
+                question: "The most common and deadliest plasmodia",
+                options: ["Plasmodium vivax", "Plasmodium ovale", "Plasmodium falciparum", "Plasmodium malariae"],
+                correctAnswer: "Plasmodium falciparum",
+                rationale: "Plasmodium falciparum is the most common and deadliest species of malaria parasite. Why Plasmodium Falciparum is Dangerous-High Severity- It causes the most dangerous form of malaria. Rapid Growth- It multiplies quickly in the blood and blocks small blood vessels in organs.Severe Complications- It can lead to severe organ failure, brain damage, and death if not treated fast. Plasmodium vivax- Common, but rarely causes death. Plasmodium ovale- Rare and causes a milder illness. Plasmodium malariae- Causes a long-lasting infection, but is rarely fatal."
+ 	    },
+            {
+                id: 63,
+                question: "Chickenpox is a common disease among children. It is caused by",
+                options: ["Pox viridae", "Varicella", "Zoster", "Rubeola"],
+                correctAnswer: "Varicella",
+                rationale: "Chickenpox is an acute, highly contagious infection caused by the Varicella-zoster virus (VZV). Because of this, the medical name for chickenpox is simply varicella. Varicella is the primary infection of the VZV virus, which causes chickenpox. Zoster is the reactivation of the exact same dormant virus later in life, which causes a painful, localized rash known as shingles. Pox virus is a completely different family of viruses (Poxviridae) responsible for illnesses like smallpox and mpox. Rubeola is the medical name for measles"
+            },
+	    {
+		id: 64,
+                question: "The mitochondria are cellular structures involved primarily in",
+                options: ["cell division", "storage of fats", "enzyme production", "cellular respiration"],
+                correctAnswer: "cellular respiration",
+                rationale: "Mitochondria generate chemical energy. They produce adenosine triphosphate (ATP). They are known as the powerhouse of the cell."
+ 	    },
+            {
+                id: 65,
+                question: "Which organelle acts as a “packing and transporting” center?",
+                options: ["nucleus", "ER", "Golgi apparatus", "ribosomes"],
+                correctAnswer: "Golgi apparatus",
+                rationale: "The Golgi apparatus acts as the packing and transporting center in a cell. Receives items - It gets proteins and fats from the endoplasmic reticulum (ER). Packages goods - It changes and groups these materials into small sacs called vesicles. Sends them out - It ships the packaged items to other parts of the cell or outside the cell."
+            },
+	    {
+		id: 66,
+                question: "Which of the following is NOT a eukaryotic cell?",
+                options: ["amoeba", "Proteobacteria", "bread mold", "yeast"],
+                correctAnswer: "Proteobacteria",
+                rationale: "It is a major phylum of bacteria, which are prokaryotes. They lack a nucleus and membrane-bound organelles. The Others Are Eukaryotic Amoeba is a single-celled eukaryotic protist. Bread Mold is a multicellular eukaryotic fungus. Yeast is a single-celled eukaryotic fungus."
+            },
+	    {
+		id: 67,
+                question: "The fluid mosaic model is a model pertaining to what organelle?",
+                options: ["mitochondria", "chloroplast", "cytoplasm", "cell membrane"],
+                correctAnswer: "cell membrane",
+                rationale: "he fluid mosaic model describes the structure of the cell membrane. The membrane is not solid. It moves and flows like a fluid. Proteins and cholesterol float inside a double layer of fats called phospholipids. his moving design helps control what enters and leaves the cell."
+ 	    },
+            {
+                id: 68,
+                question: "Which of the following is the site of protein synthesis?",
+                options: ["centriole", "chloroplast", "Golgi apparatus", "ribosomes"],
+                correctAnswer: "ribosomes",
+                rationale: "Ribosomes- Build proteins by following genetic instructions. Centriole- Helps organize cell division in animal cells. Chloroplast- Captures sunlight to make food (sugar) in plant cells.Golgi apparatus- Modifies, sorts, and packages proteins after they are made, but it does not synthesize them."
+            },
+	    {
+		id: 69,
+                question: "It is a network of fibers in an animal cell that account its shape",
+                options: ["cell wall", "centrosome", "cilium", "cytoskeleton"],
+                correctAnswer: "cytoskeleton",
+                rationale: "Cytoskeleton: A web of protein fibers inside the cell. It gives the cell its shape, support, and helps move parts inside. Cell wall is a tough outer layer found in plants and fungi, but not in animal cells. Centrosome is a small structure near the nucleus that helps organize cell division. Cilium is a tiny, hair-like projection on the outside of a cell used for movement."
+ 	    },
+            {
+                id: 70,
+                question: "The gel-like matrix where the thylakoids are embedded",
+                options: ["cisternae", "stoma", "stroma", "chloroplast"],
+                correctAnswer: "stroma",
+                rationale: "Stroma is the fluid-filled space surrounding the thylakoids inside a chloroplast. It contains enzymes, DNA, and RNA, and it is where the dark reactions (Calvin cycle) of photosynthesis occur. Cisternae is a flattened membrane disks found in the Golgi apparatus and endoplasmic reticulum. Stoma is a microscopic pore found on the surface of leaves used for gas exchange (plural: stomata). Chloroplast is the entire organelle that contains both the stroma and the thylakoids."
+            },
+	    {
+		id: 71,
+                question: "A mechanism that requires energy to transport molecules into the cell",
+                options: ["diffusion", "facilitated diffusion", "osmosis", " active transport"],
+                correctAnswer: " active transport",
+                rationale: "Active transport uses energy (in the form of ATP) to move molecules into or out of a cell.It often moves molecules from a lower concentration to a higher concentration, which goes against the natural flow. Diffusion moves molecules from high to low concentration without using energy. Facilitated diffusion helps molecules cross the cell membrane using protein channels, but still requires no energy. Osmosis is the passive movement of water molecules across a membrane."
+            },
+	    {
+		id: 72,
+                question: "What do Paramecium cells have that prevent them from swelling after an intake of too much water",
+                options: ["contractile vacuole", "cell walls", "vesicles", "plastids"],
+                correctAnswer: "contractile vacuole",
+                rationale: "Paramecium lives in freshwater environments where water constantly enters the cell via osmosis. The contractile vacuole acts as a pump to collect and expel this excess water. Without it, the cell would swell and burst, as Paramecium lacks a rigid cell wall."
+ 	    },
+            {
+                id: 73,
+                question: "Which of the following mechanisms is involved in the transport of oxygen from the lungs to the bloodstream?",
+                options: ["facilitated diffusion", "osmosis", "simple diffusion", "endocytosis"],
+                correctAnswer: "simple diffusion",
+                rationale: "Oxygen moves from the lungs to the bloodstream through simple diffusion. High to low concentration- Oxygen is at a higher concentration in the alveoli (air sacs) of the lungs than in the blood.No energy required- Molecules move naturally across the thin alveolar-capillary membrane without using cellular energy (ATP). No transport proteins needed- Oxygen molecules are small and nonpolar, allowing them to pass directly through the lipid bilayer of the cell membranes."
+            },
+	    {
+		id: 74,
+                question: "The homeostatic regulation of water and salt content in an organism’s body is called",
+                options: ["turgor pressure", "thermoregulation", "osmoregulation", " osmotic pressure"],
+                correctAnswer: "osmoregulation",
+                rationale: "Osmoregulation is the active regulation of the osmotic pressure of bodily fluids to maintain the balance of water and salt. Thermoregulation is the process that allows the body to maintain its core internal temperature. Turgor pressure is the outward pressure exerted by the fluid inside a plant cell against its cell wall. Osmotic pressure is the minimum pressure needed to stop water from moving across a semipermeable membrane."
+ 	    },
+            {
+                id: 75,
+                question: "A cell in a _________ environment has less solute concentration than its environment",
+                options: ["hypertonic", "hypotonic", "isotonic", "plasmolytic"],
+                correctAnswer: "hypertonic",
+                rationale: "The correct answer is hypertonic. Hypertonic- The environment has a higher solute concentration (and less water) than the cell. Therefore, the cell has less solute concentration than its environment. Hypotonic- The environment has a lower solute concentration (and more water) than the cell. Isotonic- The environment and the cell have equal solute concentrations. Plasmolytic- This refers to a plant cell that has shrunk due to being placed in a hypertonic solution, rather than the environment itself."
+            },
+	    {
+ 		 id: 76,
+                question: "A cell in a _________ environment has more solute concentration than its environment",
+                options: ["hypertonic", "hypotonic", "isotonic", "plasmolytic"],
+                correctAnswer: "hypotonic",
+                rationale: "Hypotonic- The environment has a lower solute concentration (more water) than the inside of the cell. Water moves into the cell. Hypertonic- The environment has a higher solute concentration (less water) than the cell. Water leaves the cell. Isotonic- The solute concentration is equal both inside and outside the cell. Plasmolytic- This describes a plant cell that has shrunk due to being placed in a hypertonic environment."
+            },
+	    {
+		id: 77,
+                question: "Which of the following does not belong to the group",
+                options: ["Paramecium", "Sarcodina (amoebas)", "Myxomycota", "Zoomastigina"],
+                correctAnswer: "Myxomycota",
+                rationale: "Myxomycota(fungus like together with acrosiomycota, oomycote). Myxomycota consists of slime molds, which belong to the fungus-like protists. The other three options belong to the animal-like protists (protozoans). Paramecium- Ciliated protozoan (animal-like). Sarcodina- Amoeboid protozoan (animal-like). Zoomastigina- Flagellated protozoan (animal-like)."
+            },
+	    {
+		id: 78,
+                question: "The internal environment of a cell must be kept within limits that the cell can tolerate. This state is called",
+                options: ["synchronization", "homeostasis", "chaos", "turgor pressure"],
+                correctAnswer: "homeostasis",
+                rationale: "Homeostasis is the process by which living organisms maintain a stable internal environment despite external changes. It ensures that crucial variables like temperature, pH, and fluid balance stay within tolerable limits. Synchronization- This refers to things happening at the same time. Chaos- This means complete disorder, which is the opposite of a stable cell environment. Turgor pressure- This is specifically the fluid pressure inside plant cells that keeps them rigid."
+ 	    },
+            {
+                id: 79,
+                question: "From what compound does the oxygen released during photosynthesis come?",
+                options: ["carbon dioxide", "water", "glucose", "ATP"],
+                correctAnswer: "water",
+                rationale: "The oxygen released during photosynthesis comes from water. Light Reactions- Plants absorb sunlight and use the energy to split water molecules. Oxygen Release- This splitting process (photolysis) releases oxygen gas into the atmosphere. The hydrogen ions from the water are used to build energy-carrying molecules like ATP and NADPH."
+            },
+	    {
+		id: 80,
+                question: "Which of the following organisms are heterotrophs?",
+                options: ["grasses", " ferns", "mushrooms", "mosses"],
+                correctAnswer: "mushrooms",
+                rationale: "Mushrooms are the heterotrophs in this list because they cannot make their own food and must absorb nutrients from other organic matter. Grasses- Autotrophs (plants that make food using sunlight). Ferns- Autotrophs (plants that make food using sunlight). Mosses- Autotrophs (plants that make food using sunlight)."
+ 	    },
+            {
+                id: 81,
+                question: "The sites of photosystems I and II in the chloroplasts are the?",
+                options: ["chlorophyll molecules", "thylakoid membranes", "grana", "stomata"],
+                correctAnswer: "thylakoid membranes",
+                rationale: "The sites of photosystems I and II in the chloroplasts are the thylakoid membranes. Thylakoid membranes hold the pigment molecules and protein complexes needed for light reactions. Photosystem I and Photosystem II sit directly inside these membranes. Chlorophyll molecules- These are pigments inside the photosystems, not the structural site itself. Grana- These are stacks of thylakoids, but the specific site of the photosystems is the membrane. Stomata- These are tiny pores on leaves used for gas exchange, not inside chloroplasts."
+            },
+	    {
+ 		id: 82,
+                question: "_____ is released as the main product of the light-independent reactions of photosynthesis?",
+                options: ["ATP", "CO2", " glucose", "water"],
+                correctAnswer: " glucose",
+                rationale: "Glucose is released as the main product of the light-independent reactions of photosynthesis. Plants use the light-independent reactions (also called the Calvin cycle) to make food. The plant takes in carbon dioxide from the air along with energy-carrying molecules (ATP and NADPH) made during the light-dependent reactions. These ingredients combine to build glucose, a simple sugar the plant uses for energy and growth."
+            },
+	    {
+ 		id: 83,
+                question: "____ refers to the group of cells found in the exterior of the leaf where stomata are embedded",
+                options: ["epidermis", "grana", "mesophyll", "stroma"],
+                correctAnswer: "epidermis",
+                rationale: "Epidermis is the outermost cell layer protecting the leaf. It contains stomata for gas exchange. Grana are thylakoid stacks inside chloroplasts where light-dependent reactions occur. Mesophyll is the inner green tissue of a leaf responsible for photosynthesis. Stroma is the fluid-filled space surrounding grana inside chloroplasts."
+            },
+	    {
+ 		id: 84,
+                question: "Carotenoids are orange and red pigments. Which of the following is best reflected by carotenoids during photosynthesis?",
+                options: ["red pigments", "green pigments", "violet pigments", "yellow and green pigments"],
+                correctAnswer: "red pigments",
+                rationale: "Pigment Color- Carotenoids are accessory pigments that appear yellow, orange, and red. Light Reflection- Objects reflect the wavelengths of light they do not absorb. Light Absorption- Carotenoids absorb blue-green and violet light during photosynthesis, leaving longer wavelengths like red, orange, and yellow to be reflected."
+            },
+	    {
+ 		id: 85,
+                question: "All of these are attributes of a Eukaryotic cell, EXCEPT",
+                options: ["Have a well-defined nucleus", "Their DNA is bounded within the nucleus", "Contain many membrane-bound organelles", "Their nucleoid is suspended in the cytoplasm"],
+                correctAnswer: "Their nucleoid is suspended in the cytoplasm",
+                rationale: "Nucleoids are found only in prokaryotic cells (like bacteria). Prokaryotes lack a true nucleus. Eukaryotic cells have a true, membrane-bound nucleus instead."
+            },
+	    {
+ 		id: 86,
+                question: "Which of the following does NOT belong to the group?",
+                options: ["Dark reaction", " Light dependent reaction", "Calvin-Benson Cycle", "Carbon Fixation"],
+                correctAnswer: " Light dependent reaction",
+                rationale: "Light dependent reaction does not belong to the group because it requires sunlight, while the other three are parts or names of the light-independent (dark) reactions."
+            },
+	    {
+ 		id: 87,
+                question: "These structures are NOT present in a prokaryotic cell.",
+                options: ["cell membrane, cytoplasm, ribosome", "ribosome, nucleoid, DNA", " mitochondria, nucleus, endoplasmic reticulum", "cell wall, chloroplast, flagellum"],
+                correctAnswer: " mitochondria, nucleus, endoplasmic reticulum",
+                rationale: "The correct option is mitochondria, nucleus, and endoplasmic reticulum. These structures are not present in a prokaryotic cell. Prokaryotic cells are simple and small. They do not have membrane-bound organelles. Their DNA floats freely in a region called the nucleoid, not inside a true nucleus."
+            },
+	    {
+ 		id: 88,
+                question: "This is a possible effect of a hypertonic solution to a cell.",
+                options: ["water flows inside the cell", "plasmolysis", "make the cell turgid", "cytolysis"],
+                correctAnswer: "plasmolysis",
+                rationale: "A hypertonic solution has more dissolved particles (solutes) outside the cell than inside. Water flows out of the cell to try and balance the concentration.The cell membrane pulls away from the cell wall as the cell loses water. Water flows inside the cell- This happens in a hypotonic solution (low solute outside). Make the cell turgid- This means firm or swollen, which also happens in a hypotonic solution.Cytolysis - This means the cell bursts from too much water entering, which happens to animal cells in a hypotonic solution."
+            },
+	    {
+ 		id: 89,
+                question: "The DNA appears as long, thin, thread-like structure in a non-dividing cell is called",
+                options: ["chromatid", "chromatin", "chromosome", "chlorophyll"],
+                correctAnswer: "chromatin",
+                rationale: "Chromatin is the loose, thread-like combination of DNA and proteins found inside a non-dividing cell's nucleus. Chromosome is the tightly coiled, condensed structure that DNA forms when the cell is ready to divide. Chromatid is one of the two identical halves of a replicated chromosome. Chlorophyll is the green pigment in plants that absorbs light for photosynthesis, which is unrelated to DNA."
+            },
+	    {
+ 		id: 90,
+                question: "Which of the following is NOT a correct organelle-function combination?",
+                options: ["mitochondria- “power house”", "ribosome- protein synthesis", "centrosome- suicide bags", "Smooth ER- lipid synthesis"],
+                correctAnswer: "centrosome- suicide bags",
+                rationale: "Centrosome is the organelle helps organize microtubules and regulates cell division. Suicide Bags is a term that actually refers to lysosomes, which contain digestive enzymes that break down waste or destroy the cell if it is damaged."
+            },
+	    {
+ 		id: 91,
+                question: "______, ________ and _______ are the requirements to proceed with the light independent reaction of photosynthesis in plants.",
+                options: ["CO2, ATP, NADPH", "H2O, CO2, light", "O2, ATP, NADPH", "e-, H+, O2"],
+                correctAnswer: "CO2, ATP, NADPH",
+                rationale: "CO2 provides the carbon atoms needed to build sugars. ATP provides the energy required for the chemical reactions. NADPH provides the high-energy electrons needed to reduce carbon. These three inputs drive the Calvin cycle in the stroma."
+            },
+	    {
+ 		id: 92,
+                question: "It is a branch of science that deals with the study of how body and its parts work.",
+                options: ["Physiology", "Anatomy", "Morphology", "Cytology"],
+                correctAnswer: "Physiology",
+                rationale: "Physiology is the study of how living bodies and their parts function and work. Anatomy is the study of the physical structure and parts of the body. Morphology is the study of the overall form and shape of organisms. Cytology is the study of individual cells."
+            },
+	    {
+ 		id: 93,
+                question: "The genetic material of many organisms belongs to which major category of organic compounds?",
+                options: ["amino acid", "fatty acid", "nucleic acid", "acetic acid"],
+                correctAnswer: "nucleic acid",
+                rationale: "The genetic material of organisms belongs to nucleic acid. DNA and RNA are the two main types of nucleic acids. They store and pass on genetic instructions for life."
+            },
+	    {
+ 		id: 94,
+                question: "Paramecium, a single-celled organism, is undergoing binary fission. Which of the following characteristic of living things is best-suited to explain the scenario?",
+                options: ["Living things undergo metabolic processes in their bodies.", "Living things can move", "Living things can react to stimuli", "Livings things can reproduce"],
+                correctAnswer: "Livings things can reproduce",
+                rationale: "Binary fission is a form of asexual reproduction."
+            },
+	    {
+ 		id: 95,
+                question: "Which of the following is TRUE about chemical bonds?",
+                options: ["Covalent bond is the “losing” and “gaining” of electrons", "H-bond is an example of intramolecular force of attraction", "Non-polar bond is a type covalent bond", " Ionic bond is the equal sharing of electron."],
+                correctAnswer: "Non-polar bond is a type covalent bond",
+                rationale: "Non-polar bond is a type covalent bond: Covalent bonds are categorized based on how electrons are shared. In a non-polar covalent bond, two atoms share electrons equally.  Covalent bond is the “losing” and “gaining” of electrons is false because the losing and gaining (transfer) of electrons describes an ionic bond. Covalent bonds involve the sharing of electrons. H-bond is an example of intramolecular force of attraction is false. A hydrogen bond (H-bond) is an intermolecular force because it occurs between different molecules, rather than an intramolecular force which holds a single molecule together. Ionic bond is the equal sharing of electron is FALSE. An ionic bond involves the complete transfer of electrons from one atom to another, creating oppositely charged ions that attract. Equal sharing describes a non-polar covalent bond."
+            },
+	    {
+ 		id: 96,
+                question: "Which of the following is an example of endocytosis?",
+                options: ["Perfume scent is evenly distributed in an empty room ", "Water moving from a region of low solute to a region of high solute concentration", "WBC antibodies attacking foreign materials in the blood", "Maintaining a high concentration of Na+ outside the cell"],
+                correctAnswer: "WBC antibodies attacking foreign materials in the blood",
+                rationale: "Endocytosis is the process where a cell engulfs external material by folding its membrane inward. White Blood Cells (WBCs)are cells that actively swallow, trap, and destroy pathogens using this exact engulfing mechanism."
+            },
+	    {
+ 		id: 97,
+                question: "This compound can turn blue litmus paper to red.",
+                options: [" NaCl", "HCl", "KOH", "H2O"],
+                correctAnswer: "HCl",
+                rationale: "HCl (hydrochloric acid) is an acid. Acids turn blue litmus paper red. NaCl is a neutral salt. It does not change litmus color. KOH is a strong base. It turns red litmus paper blue. H2O is pure water. It is neutral and has no effect on litmus."
+            },
+	    {
+ 		id: 98,
+                question: "A scientific theory is",
+                options: ["a guess as to why things occur", "always correct", " a broad statement that ties together many facts", "easily changed"],
+                correctAnswer: "a broad statement that ties together many facts",
+                rationale: "Well-supported- A scientific theory is a deeply tested explanation of the natural world. Evidence-based - It relies on a large body of facts, laws, and verified hypotheses."
+            },
+	    {
+ 		id: 99,
+                question: "The structure of a DNA consists of the following, EXCEPT",
+                options: ["deoxyribose, thymine, phosphate group", " sugar, nitrogenous base, phosphate group", "guanine, uracil, deoxyribose, double helix", "adenine, cytosine, purine base, sugar"],
+                correctAnswer: "guanine, uracil, deoxyribose, double helix",
+                rationale: "uracil is a nitrogenous base found exclusively in RNA, not DNA. DNA utilizes thymine instead of uracil to pair with adenine"
+            },
+	    {
+ 		id: 100,
+                question: "Which of the following statement is FALSE about ribosomes?",
+                options: ["They are responsible for protein synthesis", "They are manufactured at the endoplasmic reticulum", "Is constructed with a small and a large subunit", "Is composed of protein and RNA"],
+                correctAnswer: "They are manufactured at the endoplasmic reticulum",
+                rationale: "In eukaryotic cells, ribosomal subunits are actually manufactured and assembled in the nucleolus (a specialized region inside the nucleus). They are then exported to the cytoplasm. Ribosomes only bind to the rough endoplasmic reticulum later to synthesize specific proteins; they are not made there"
+            },
+	    {
+       		 id: 101,
+        question: "This is an example of an active transport.",
+        options: ["Perfume scent is evenly distributed in an empty room", "Water moving from a region of low solute to a region of high solute concentration", "WBC antibodies attacking foreign materials in the blood", 
+            "Maintaining a high concentration of Na+ outside the cell"],
+        correctAnswer: "Maintaining a high concentration of Na+ outside the cell",
+        rationale: "Maintaining a high concentration of sodium ions outside the cell is classified as active transport because it requires cellular energy to move ions against their natural flow"
+  	  },
+   	 {
+      		  id: 102,
+        question: "This organelle connects the nuclear envelope to the cell membrane",
+        options: ["endoplasmic reticulum", "Golgi apparatus", "mitochondria", "nucleolus"],
+        correctAnswer: "endoplasmic reticulum",
+        rationale: "The endoplasmic reticulum (ER) is the cell organelle that connects the nuclear envelope to the cell membrane. The outer membrane of the nuclear envelope is continuous with the membrane of the endoplasmic reticulum. The ER extends outward from the nucleus through the cytoplasm. It forms a continuous network of membranes that can reach out toward the plasma (cell) membrane."
+    },
+    {
+        id: 103,
+        question: "In photosynthesis, which of the following is NOT involved in the cyclic pathway of light dependent reaction?",
+        options: [" P700", "electron transport chain", " sunlight", "NADPH"],
+        correctAnswer: "NADPH",
+        rationale: "NADPH is not involved in the cyclic pathway of the light-dependent reactions. Cyclic Pathway: Electrons cycle through Photosystem I (P700) and an Electron Transport Chain (ETC) using sunlight to produce only ATP.Non-Cyclic Pathway: This alternative pathway involves both Photosystem I and II to produce both ATP and NADPH."
+    },
+    {
+        id: 104,
+        question: "All of the following are adaptations to the winter condition EXCEPT",
+        options: ["Reduction of metabolic rate", "Continuous uptake of water", "Utilization of energy stored in body fat", "Livings things can reproduce"],
+        correctAnswer: "Continuous uptake of water",
+        rationale: "Instead of continuous uptake, organisms adapt by conserving water to prevent dehydration. Reduction of metabolic rate: Hibernation and torpor lower energy needs when food is scarce.Utilization of stored body fat: Animals burn fat reserves to survive when they cannot forage.Living things can reproduce: Some species strategically reproduce in winter (e.g., certain deep-sea creatures or specific mammals) to ensure offspring emerge when resources peak in spring."
+    },
+    {
+        id: 105,
+        question: "These are considered inorganic compounds EXCEPT",
+        options: ["Carbonate", "Protein", "Water", "Oxygen molecule"],
+        correctAnswer: "Protein",
+        rationale: "Protein is the correct answer because it is an organic compound, unlike the others which are inorganic. Proteins contain carbon-hydrogen bonds, which define organic molecules. They are large, complex molecules built by living things (amino acids). Carbonate: Contains carbon, but lacks carbon-hydrogen bonds (usually mineral-based).Water contains no carbon atoms.Oxygen molecule contains only oxygen atoms."
+    },
+    {
+        id: 106,
+        question: "Atoms of the same element differ from ions of that element because",
+        options: ["they have different numbers of electrons", "their proton numbers are not the same", "their neutrons number are not the same", " there is no difference between an atom and an ion of the same element"],
+        correctAnswer: "they have different numbers of electrons",
+        rationale: "they have different numbers of electrons: This is correct because an atom is neutral when its protons and electrons are equal. An ion forms only when an atom gains or loses electrons, giving it a net electrical charge. Their proton numbers are not the same: This is incorrect because the number of protons defines the identity of the element. Atoms and ions of the same element must always have the exact same number of protons. Their neutrons number are not the same: This is incorrect because a difference in neutron count describes isotopes, not ions. There is no difference between an atom and an ion of the same element: This is incorrect because atoms are electrically neutral, whereas ions carry a net positive or negative charge"
+    },
+    {
+        id: 107,
+        question: "The chlorophylls and other pigments involved in trapping sunlight energy and storing it are arranged into clusters called",
+        options: ["chloroplast", "photosystems", "cristae", "thylakoids"],
+        correctAnswer: "photosystems",
+        rationale: "Photosystems are functional units of chlorophyll and other pigments embedded in the thylakoid membrane.They absorb sunlight energy and use it to power the first stage of photosynthesis. Chloroplast is the entire organelle where photosynthesis takes place. Cristaeare the folds of the inner mitochondrial membrane (used in cellular respiration, not photosynthesis). Thylakoids are the individual disk-like membrane structures inside a chloroplast where photosystems are located, but not the pigment clusters themselves."
+    },
+    {
+        id: 108,
+        question: "Ability of tendrils to wrap around a support",
+        options: ["phototropism", "chemotropism", "gravitropism", "thigmotropism"],
+        correctAnswer: "thigmotropism",
+        rationale: "The ability of tendrils to wrap around a support is thigmotropism. Phototropism is the growth movement in response to a light source. Gravitropism is the growth movement in response to gravity (also called geotropism). Chemotropism is the growth movement in response to a chemical stimulus."
+    },
+    {
+        id: 109,
+        question: "What is the other term for insect-trapping plants?",
+        options: ["voracious plants", "omnivorous plants", "carnivorous plants", "herbivorous plants"],
+        correctAnswer: "carnivorous plants",
+        rationale: "The other term for insect-trapping plants is carnivorous plants. They catch and digest insects and small animals to get nutrients. They usually grow in poor soil that lacks essential minerals like nitrogen. Well-known examples include the Venus flytrap, pitcher plants, and sundews."
+    },
+    {
+        id: 110,
+        question: "These are stems that store a lot of water",
+        options: ["tuber", "corm", "succulent", "cladode"],
+        correctAnswer: "succulent",
+        rationale: "The correct answer is succulent. Succulents are plants with thickened, fleshy parts that specialize in storing water. Tubers and corms are underground stems used primarily for food storage, not primary water storage. Cladodes are flattened, photosynthesizing stems (like cactus pads) that can store water, but succulent is the broader, standard term for water-storing stems and leaves."
+    },
+    {
+	id: 111,
+        question: "These layers of cells communicate with the guard cells causing them to open or close, depending on the concentration of gases.",
+        options: ["palisade mesophyll", "spongy mesophyll", "stomata", "cuticle"],
+        correctAnswer: "spongy mesophyll",
+        rationale: "The spongy mesophyll layer contains loosely arranged cells and air spaces that facilitate gas movement inside the leaf. These cells detect and communicate changes in gas concentrations (such as carbon dioxide) to the guard cells, signaling them to open or close the stomatal pores. Stomata cannot be the correct answer because they are the target of the regulation, not the group of cells doing the communicating. Stomata are an anatomical structure, not a tissue layer: A stoma is just the microscopic hole (pore) plus its two surrounding guard cells. The question asks for layers of cells that monitor gas concentrations and send signals. Guard cells make up the stomata. Guard cells cannot communicate with guard cells to trigger themselves from the outside. It is the spongy mesophyll layer that surrounds the internal air pockets of the leaf where gases accumulate. When these cells detect that carbon dioxide levels are too high or too low, they initiate the chemical signaling pathways that tell the guard cells to swell or shrink"
+  	  },
+   	 {
+      	id: 112,
+        question: "This carries dissolved food substances throughout the plant.",
+        options: ["phloem", "phlegm", "xylem", "xylophone"],
+        correctAnswer: "phloem",
+        rationale: "The phloem is a specialized vascular tissue responsible for translocation—the process of transporting organic nutrients, mainly dissolved sugars (sucrose) made during photosynthesis, from the leaves to the rest of the plant. Xylem is a plant tissue that transports water and dissolved mineral nutrients upward from the roots, not food. Phlegm is a thick mucus produced by the respiratory system in humans and animals. Xylophone is a musical percussion instrument with wooden bars"
+    },
+    {
+        id: 113,
+        question: "This cell structure transports water throughout the plant.",
+        options: ["phloem", "phlegm", "xylem", "xylophone"],
+        correctAnswer: "xylem",
+        rationale: "The xylem is a specialized, rigid plant vascular tissue designed to transport water and dissolved mineral nutrients upward from the roots to the stems and leaves"
+    },
+    {
+        id: 114,
+        question: "A root that serves as a support to the plant. These are also called brace roots.",
+        options: ["prop roots", "adventitious roots", "storage roots", "photosynthetic  roots"],
+        correctAnswer: "prop roots",
+        rationale: "Prop roots, which are also frequently called brace roots, grow from the lower nodes of a plant's stem above the ground and extend down into the soil. Their primary purpose is to provide structural reinforcement and mechanical stability to tall or top-heavy plants, keeping them anchored against strong winds. A classic example of this is the support system seen at the base of corn or sugarcane stalks. prop roots are a specific sub-category of adventitious roots ,roots that develop from non-root tissue like stems or leaves, prop roots is the precise choice here because it explicitly serves as the synonym for brace roots."
+    },
+    {
+        id: 115,
+        question: "These roots are modified for storage of food or water.",
+        options: ["storage roots", "adventitious roots", "prop roots", "photosynthetic  roots"],
+        correctAnswer: "storage roots",
+        rationale: "Storage roots are specifically modified to store large amounts of carbohydrates or water underground to help the plant survive harsh seasons or periods of drought. Common examples include carrots, sweet potatoes, and beets. Adventitious roots grow from unusual places (like stems or leaves), rather than the main root system. Prop roots grow above ground to provide mechanical support and stability (brace roots). Photosynthetic roots green roots found above ground in certain plants (like orchids) that can capture sunlight to produce food."
+    },
+    {
+        id: 116,
+        question: " It is enclosed in veins, found in the spongy layer.",
+        options: ["ground tissues", "vascular tissues", "meristematic tissues", "epidermal tissues"],
+        correctAnswer: "vascular tissues",
+        rationale: "In a leaf, the veins are actually vascular bundles containing xylem and phloem. These veins are physically embedded and run right through the loosely packed spongy mesophyll layer of the leaf. Ground tissues: This refers to the surrounding filler or metabolic tissue of the leaf (like the palisade and spongy mesophyll layers themselves), rather than what is enclosed inside the veins. Meristematic tissues are actively dividing growth tissues found at the tips of shoots and roots, not inside fully formed leaf veins. Epidermal tissues form the protective outer skin layer of the leaf, shielding it from the environment."
+    },
+    {
+        id: 117,
+        question: "Consists of a single-layer of tightly closed cells with little or no stomata.",
+        options: ["upper epidermis", "palisade mesophyll layer", "spongy mesophyll layer", "lower Epidermis"],
+        correctAnswer: "upper epidermis",
+        rationale: "The upper epidermis consists of a single layer of tightly packed, brick-shaped cells coated with a waxy cuticle. Because this side of the leaf faces the direct sunlight, it contains very few or no stomata to prevent excessive water loss from evaporation. Lower Epidermis is also a single layer of cells, it contains the vast majority of the leaf's stomata to allow for safer gas exchange away from direct heat. Palisade Mesophyll Layer is not an outer skin layer; it is an internal tissue layer made of vertically elongated, tightly packed cells full of chloroplasts. Spongy Mesophyll Layer is an internal layer consists of loosely arranged, irregularly shaped cells with large air spaces, rather than tightly closed cells."
+    },
+    {
+        id: 118,
+        question: "These modified stems are primarily for protection from grazing animals",
+        options: ["cladodes", "bulbs", "thorns", "stolons"],
+        correctAnswer: "thorns",
+        rationale: "Thorns are sharp, rigid, modified stems that arise from axillary buds. Their sharp points serve as a physical defense mechanism to protect plants from being eaten by herbivores and grazing animals. Cladodes are flattened, green stems modified to perform photosynthesis, usually found in desert plants like cacti. Bulbs are underground modified shoots containing fleshy scale leaves meant for food storage and survival during dormancy (onions). Stolons are above-ground horizontal stems (runners) that spread across the soil to help the plant reproduce and form new clones (strawberries)."
+    },
+    {
+        id: 119,
+        question: "These are slender whip-like structures that help hold climbing plants in place",
+        options: ["tendrils", "bracts", " veins", "mucigel"],
+        correctAnswer: "carnivorous plants",
+        rationale: "Tendrils are specialized, slender, and sensitive whip-like structures modified from stems, leaves, or petioles. When they touch a nearby object or surface, they coil tightly around it to anchor and support climbing plants (like grapes or peas) as they grow upward toward sunlight. Bracts are modified leaves that look like colorful petals to attract pollinators (the bright red parts of a poinsettia). Veins are vascular strands (xylem and phloem) that transport water and food within a leaf. Mucigel is a slimy, lubricating substance secreted by plant root caps to help roots push easily through the soil"
+    },
+    {
+        id: 120,
+        question: "It is the tip of a leaf opposite to the petiole.",
+        options: ["leaf apex", "base", "lamina", "midrib"],
+        correctAnswer: "leaf apex",
+        rationale: "The leaf apex is the terminal point or sharp tip of the leaf blade (lamina). It sits directly opposite the leaf base and the petiole (the stalk connecting the leaf to the stem). Base is the exact opposite end—the lower part of the leaf blade where it connects to the petiole or stem. Lamina refers to the entire broad, flat, green surface of the leaf blade itself, not just its tip "
+    },
+    {
+	 id: 121,
+        question: "The spines of cacti reduce the rate of _________.",
+        options: ["transportation", "perspiration", "transpiration", "translocation"],
+        correctAnswer: "transpiration",
+        rationale: "The sharp spines of a cactus are actually highly modified leaves. By reducing their surface area down to thin needles, they drastically minimize transpiration—which is the loss of water vapor through the leaf pores of a plant. Transportation is a general term for moving things, not the specific biological process of plant water loss. Perspiration is sweating, which occurs in humans and animals, not plants. Translocation is the specific movement of dissolved sugars and food through the phloem."
+    },
+    {
+ 	id: 122,
+        question: "It is a type of root system which is made up of numerous hair-like, thin or slender roots.",
+        options: ["adventitious root", "fibrous root", "tap root", "meristematic root"],
+        correctAnswer: "fibrous root",
+        rationale: "A fibrous root system consists of a dense network of numerous thin, slender, hair-like roots that spread out close to the soil surface. This system does not have a single main dominant root; instead, all the roots are roughly the same size. A classic example is the root system found in grasses, wheat, and corn. Tap root features one large, thick main root that grows deep into the soil with smaller lateral branches growing out of it (carrots). Adventitious root refers to any root that grows from an unusual non-root part of the plant, such as stems or leaves, rather than describing a specific branching pattern. Meristematic root is not a type of root system; meristematic simply refers to the zone of actively dividing cells at the very tip of a root."
+    },
+    {
+ 	id: 123,
+        question: "Flattened stems that perform photosynthesis.",
+        options: ["rhizome", "stolon", "cladode", "succulent"],
+        correctAnswer: "cladode",
+        rationale: "A cladode (sometimes called a cladophyll) is a modified, flattened green stem that has taken over the role of photosynthesis [C]. This adaptation is common in desert plants, like cacti, where leaves have been reduced to sharp spines to save water. Rhizome is a horizontal stem that grows entirely underground to store food and propagate new shoots (ginger). Stolon is an above-ground horizontal runner stem used for vegetative reproduction (strawberry plants). Succulent is a general descriptive term for any plant with fleshy, thickened parts used to store water, not a specific stem type."
+    },
+    {
+ 	id: 124,
+        question: "It is a small leafy outgrowth at the base of a leaf or its stalk; usually occurring in pairs and soon shed.",
+        options: ["midrib", "petiole", "stipule", "base"],
+        correctAnswer: "stipule",
+        rationale: "A stipule is a small, leafy, or scale-like outgrowth found at the base of the petiole (leaf stalk). They typically grow in pairs and often drop off soon after the leaf expands. Midrib is the large, central main vein running down the middle of a leaf blade. Petiole is the leaf stalk that attaches the blade to the stem. Base is the bottom edge of the leaf blade where it connects to the petiole."
+    },
+    {
+	 id: 125,
+        question: "These are classification of leaves according to the arrangement of veins (leaf venation), EXCEPT",
+        options: ["alternate", "parallel", "reticulate", "pinnate"],
+        correctAnswer: "alternate",
+        rationale: "Alternate is a classification for leaf arrangement on the stem (phyllotaxy), not the arrangement of veins within the leaf itself. Parallel veins run side-by-side along the length of the leaf (common in monocots like grass). Reticulate veins form a net-like or web-like pattern across the blade (common in dicots). Pinnate is a type of reticulate venation where secondary veins branch out from a single main midrib like a feather."
+    },
+    {
+ 	id: 126,
+        question: "Part of the leaf that carries organic nutrients to all parts of the plant",
+        options: ["cuticle", "veins", "mesophyll", "epidermis"],
+        correctAnswer: "veins",
+        rationale: "The veins contain the plant's vascular bundles, which include the phloem. The phloem is the specific tissue responsible for transporting soluble organic nutrients (like sucrose made during photosynthesis) from the leaf to all other parts of the plant. Cuticle is a protective, waxy outer layer that seals the leaf to reduce water loss. Mesophyll is the inner tissue layers (palisade and spongy) where photosynthesis takes place and gases are exchanged, not where materials are transported long-distance. Epidermis is the outermost cell layer acting as a protective skin for the leaf."
+    },
+   {
+    id: 127,
+    question: "All of the following are related to catabolism, EXCEPT",
+    options: ["degradation", "building up", "cell respiration", "metabolism"],
+    correctAnswer: "building up",
+    rationale: "Catabolism refers to the metabolic pathways that break down large, complex molecules into simpler ones, releasing energy. \"Building up\" molecules is instead called anabolism. Degradation is a direct synonym for breaking down or tearing down molecules. Cell respiration is a classic example of a catabolic process where glucose is broken down to release usable cellular energy (ATP). Metabolism is the overarching umbrella term that encompasses both catabolism (breaking down) and anabolism (building up)."
+   },
+    {
+ 	id: 128,
+        question: "It is a ripened ovary with or without its associated parts.",
+        options: ["fruit", "locule", "carpel", "pericarp"],
+        correctAnswer: "fruit",
+        rationale: "In botany, a fruit is strictly defined as the matured or ripened ovary of a flowering plant, which often contains seeds and may or may not include attached accessory parts (like the receptacle or calyx) that fuse with it during development. Carpel is the female reproductive organ of the flower (consisting of the stigma, style, and ovary) before it matures Locule is a chamber or cavity inside the ovary where the ovules (seeds) develop. Pericarp is the actual wall of the fruit that develops from the ovary wall, which is only a part of the fruit rather than the whole structure."
+    },
+    {
+	 id: 129,
+        question: "It is the sticky bulb that you see in the center of a flower.",
+        options: ["ovary", "stigma", "style", "anther"],
+        correctAnswer: "stigma",
+        rationale: "The stigma is the sticky, bulb-like top portion of the pistil (the female reproductive organ) located right in the center of a flower. Its stickiness is a specialized feature designed to catch and hold onto pollen grains. Ovary is the swollen base of the pistil where seeds develop, located far below the stigma. Style is the long, tube-like stalk that connects the stigma down to the ovary. Anther is the male part of the flower that produces and contains the pollen, usually surrounding the central pistil."
+    },
+    {
+ 	id: 130,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+ 	id: 131,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 132,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 133,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 134,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 135,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 136,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 137,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 138,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 139,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 140,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 141,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 142,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 143,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 144,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 145,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 146,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 147,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 148,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 149,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+	id: 150,
+        question: "The following are female reproductive organs, EXCEPT.",
+        options: [" stigma", "filament", "style", "ovary"],
+        correctAnswer: "filament",
+        rationale: "The filament is part of the stamen, which is the male reproductive organ of a flower. Its primary function is a slender stalk that holds up the pollen-producing anther. Stigma is the sticky top platform that receives pollen grains. Style is the long tube that connects the stigma down to the ovary. Ovary the swollen basal portion where the ovules (egg cells) are kept "
+    },
+    {
+
+       	    }
+            // Add your next 100+ questions matching this exact format here
+        ];
+
+        // Runtime variables
+        let filteredQuestions = [...questionBank];
+        let currentPage = 1;
+        const itemsPerPage = 50;
+	let totalCorrectAnswers = 0;
+	let totalUserAttempts = 0;
+
+        // 2. RENDER ENGINE: Builds HTML dynamically
+        function renderQuestions() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = ""; // Clear current view
+
+            // Calculate pagination indices
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageItems = filteredQuestions.slice(startIndex, endIndex);
+
+            if (pageItems.length === 0) {
+                container.innerHTML = "<p>No questions found.</p>";
+                updatePaginationControls();
+                return;
+            }
+
+            pageItems.forEach((q) => {
+                const qBox = document.createElement('div');
+                qBox.className = 'question-box';
+
+                // Build options links list
+                let optionsHTML = '';
+                qIndex = q.id;
+                q.options.forEach(opt => {
+                    optionsHTML += `<li><a href="#" onclick="checkAnswer(event, '${opt}', '${q.correctAnswer}', 'rat-${q.id}')">${opt}</a></li>`;
+                });
+
+                qBox.innerHTML = `
+                    <h3>Q: ${q.question}</h3>
+                    <ul class="options">${optionsHTML}</ul>
+                    <div id="rat-${q.id}" class="rationale">
+                        <strong>Correct!</strong> ${q.rationale}
+                    </div>
+                `;
+                container.appendChild(qBox);
+            });
+
+            updatePaginationControls();
+        }
+
+        // 3. LOGIC: Handle click answer validation
+       // 3. LOGIC: Handle click answer validation
+function checkAnswer(event, selected, correct, rationaleId) {
+    event.preventDefault();
+    const ratBox = document.getElementById(rationaleId);
+    
+    // Check if this question was already answered to avoid double-scoring the same box
+    if (ratBox.style.display === 'block') {
+        return; // Stops execution if they click options on an already-resolved question
+    }
+    
+    // Increase total attempts counter every time an unanswered question gets clicked
+    totalUserAttempts++;
+
+    if (selected === correct) {
+        ratBox.style.display = 'block';
+        totalCorrectAnswers++; // Increase correct tally
+    } else {
+        ratBox.style.display = 'block'; // Shows the rationale block directly even if incorrect
+        // Optional custom styling tweak to denote incorrect hits visually:
+        ratBox.innerHTML = `<strong style="color:red;">Incorrect!</strong> Your choice "${selected}" is wrong. <br><br>` + ratBox.innerHTML;
+    }
+    
+    // Dynamically update the scoreboard text numbers on your screen instantly
+    document.getElementById('scoreCounter').innerText = totalCorrectAnswers;
+    document.getElementById('attemptCounter').innerText = totalUserAttempts;
+}
+
+
+        // 4. LOGIC: Live filtering/searching
+        function handleSearch() {
+            const searchTerm = document.getElementById('searchBar').value.toLowerCase();
+            filteredQuestions = questionBank.filter(q => 
+                q.question.toLowerCase().includes(searchTerm) || 
+                q.rationale.toLowerCase().includes(searchTerm)
+            );
+            currentPage = 1; // Reset to page 1 on search
+            renderQuestions();
+        }
+
+        // 5. LOGIC: Page Navigation
+        function changePage(direction) {
+            currentPage += direction;
+            renderQuestions();
+            window.scrollTo(0,0);
+        }
+
+        function updatePaginationControls() {
+            const totalPages = Math.ceil(filteredQuestions.length / itemsPerPage) || 1;
+            document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+        }
+
+        // Initial Load
+        renderQuestions();
+    </script>
+
+</body>
+</html>
