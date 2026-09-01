@@ -1275,8 +1275,8 @@ const subjectFilter = document.getElementById('subjectFilter');
 
 const subjects = [...new Set(
     supabaseQuestions
-        .map(q => q.subject)
-        .filter(subject => subject && subject.trim() !== '')
+        .map(q => typeof q.subject === 'string' ? q.subject.trim() : q.subject)
+        .filter(subject => subject && subject !== '')
 )].sort();
 
 subjectFilter.innerHTML = '<option value="">All Subjects</option>';
@@ -2579,8 +2579,7 @@ function updateTopicFilter() {
 function handleSearch() {
     const searchTerm = document.getElementById('searchBar').value.trim().toLowerCase();
     const selectedTopic = document.getElementById('topicFilter').value;
-const selectedSubject = document.getElementById('subjectFilter').value;
-
+    const selectedSubject = document.getElementById('subjectFilter').value.trim();    
     filteredQuestions = supabaseQuestions
         .filter(q => {
             const matchesSearch =
@@ -2592,8 +2591,8 @@ const selectedSubject = document.getElementById('subjectFilter').value;
             const matchesTopic =
                 selectedTopic === '' || q.topic === selectedTopic;
 const matchesSubject =
-    selectedSubject === '' || q.subject === selectedSubject;
-
+    selectedSubject === '' ||
+    (typeof q.subject === 'string' && q.subject.trim() === selectedSubject);
             return matchesSearch && matchesTopic && matchesSubject;
 })
         .map(q => {
