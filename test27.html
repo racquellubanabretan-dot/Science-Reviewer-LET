@@ -1,0 +1,3771 @@
+
+<!-- 
+  ========================================================================
+  APPLICATION NAME: Interactive Science Question Bank & Quiz Engine
+  AUTHOR: Racquel Awisi Abretan Luban
+  COPYRIGHT: © 2026 Racquel Awisi Abretan Luban. All Rights Reserved.
+  WARNING: Unauthorized copying, modification, or distribution of this 
+  source code and its proprietary question-bank integration is strictly prohibited.
+  ========================================================================
+-->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <title>RAAL LET Review Hub</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        #searchBar {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .question-box {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .options {
+            list-style-type: none;
+            padding: 0;
+        }
+        .options li {
+            margin: 10px 0;
+        }
+        .options a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: bold;
+ }
+
+/* QUIZ ANSWER CARDS */
+.options a {
+    display: block;
+    padding: 12px 16px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #333333;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.options a:hover {
+    background: #f1f8e9;
+    border-color: #385723;
+}
+.options a:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+}
+.options a.correct {
+    background: #dff0d8;
+    border-color: #4a7c3a;
+    color: #28521c;
+}
+
+.options a.incorrect {
+    background: #f8d7da;
+    border-color: #b94a48;
+    color: #842029;
+}
+               .rationale {
+            display: none;
+            margin-top: 15px;
+            padding: 12px;
+            background: #e2f0d9;
+            border-left: 4px solid #385723;
+            border-radius: 4px;
+        }
+.rationale.feedback-correct {
+    background: #e2f0d9;
+    border-left-color: #385723;
+}
+
+.rationale.feedback-incorrect {
+    background: #f8d7da;
+    border-left-color: #b94a48;
+}
+#finalCorrectDisplay {
+    color: #28521c;
+    font-weight: bold;
+}
+
+#finalIncorrectDisplay {
+    color: #842029;
+    font-weight: bold;
+}
+#finalScoreDisplay {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+#finalAnsweredDisplay {
+    color: #555;
+}
+
+#finalPercentageDisplay {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid #0066cc;
+            background: white;
+            color: #0066cc;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .pagination button:disabled {
+            border-color: #ccc;
+            color: #ccc;
+            cursor: not-allowed;
+        }
+/* QUIZ SETUP PANEL */
+.quiz-setup-title {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.quiz-setup-subtitle {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.quiz-setup-panel {
+    max-width: 900px;
+    margin: 0 auto 30px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    background: #f8f8f8;
+}
+
+.quiz-setup-panel .controls {
+    margin-bottom: 15px;
+}
+
+.quiz-setup-panel .controls:last-child {
+    margin-bottom: 0;
+}
+
+.quiz-setup-panel label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.quiz-setup-panel input,
+.quiz-setup-panel select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+}
+/* QUIZ INFORMATION BAR */
+#quiz-info {
+    max-width: 900px;
+    margin: 0 auto 20px auto;
+    padding: 14px 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #f1f8e9;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+/* =========================================================
+   STEP 22A — MOBILE RESPONSIVENESS & UI POLISH
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+button,
+select,
+input {
+    max-width: 100%;
+}
+
+button {
+    min-height: 42px;
+    cursor: pointer;
+}
+
+table {
+    max-width: 100%;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ---------- TABLET ---------- */
+
+@media (max-width: 768px) {
+
+    body {
+        max-width: 100%;
+        margin: 0;
+        padding: 15px;
+        font-size: 15px;
+    }
+
+    .controls {
+        gap: 10px;
+    }
+
+    #searchBar {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .question-box {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .options a,
+    .options button {
+        width: 100%;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    th,
+    td {
+        padding: 8px !important;
+    }
+}
+
+/* ---------- PHONE ---------- */
+
+@media (max-width: 480px) {
+
+    body {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    h1 {
+        font-size: 28px;
+        line-height: 1.2;
+    }
+
+    h2 {
+        font-size: 22px;
+    }
+
+    h3 {
+        font-size: 18px;
+    }
+
+    .controls {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .controls > * {
+        width: 100%;
+    }
+
+    #searchBar {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+    }
+
+    .question-box {
+        padding: 14px;
+        border-radius: 8px;
+    }
+
+    .options a,
+    .options button {
+        display: block;
+        width: 100%;
+        padding: 13px;
+        margin: 8px 0;
+        font-size: 15px;
+    }
+
+    button {
+        width: 100%;
+        min-height: 44px;
+        font-size: 14px;
+    }
+
+    select,
+    input {
+        width: 100%;
+        min-height: 42px;
+        font-size: 16px;
+    }
+
+    table {
+        font-size: 12px;
+    }
+
+    th,
+    td {
+        padding: 7px !important;
+        white-space: nowrap;
+    }
+}
+
+/* =========================================================
+   STEP 22B-1 — VISUAL UI POLISH
+   ========================================================= */
+
+/* Overall visual foundation */
+body {
+    font-family: Arial, sans-serif;
+    color: #222;
+}
+
+/* Main page title */
+h1 {
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+}
+
+/* Subtitle */
+.app-subtitle {
+    color: #444;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+/* Section headings */
+h2 {
+    letter-spacing: -0.3px;
+}
+
+h3 {
+    letter-spacing: -0.2px;
+}
+
+/* Quiz setup title */
+.quiz-setup-title {
+    margin-top: 10px;
+    margin-bottom: 8px;
+}
+
+/* Quiz setup subtitle */
+.quiz-setup-subtitle {
+    color: #555;
+    margin-bottom: 20px;
+}
+
+/* Quiz information bar */
+#quiz-info {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+/* Controls area */
+.controls {
+    border-radius: 10px;
+}
+
+/* Search box */
+#searchBar {
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Search box focus */
+#searchBar:focus {
+    outline: none;
+    border-color: #198754;
+    box-shadow: 0 0 0 3px rgba(25,135,84,0.12);
+}
+
+/* Select controls */
+.controls select {
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Select focus */
+.controls select:focus {
+    outline: none;
+    border-color: #198754;
+    box-shadow: 0 0 0 3px rgba(25,135,84,0.12);
+}
+
+/* General button polish */
+button {
+    transition: transform 0.15s ease,
+                box-shadow 0.15s ease,
+                opacity 0.15s ease;
+}
+
+/* Button hover */
+button:hover {
+    opacity: 0.94;
+}
+
+/* Button click feedback */
+button:active {
+    transform: translateY(1px);
+}
+
+/* =========================================================
+   END STEP 22B-1
+   ========================================================= */
+
+/* =========================================================
+   STEP 22B-2 — BUTTON POLISH
+   ========================================================= */
+
+/* Primary START QUIZ button */
+.quiz-setup-panel button {
+    display: inline-block;
+    min-height: 44px;
+    padding: 10px 22px;
+    margin-top: 10px;
+
+    background: #198754 !important;
+    color: white !important;
+
+    border: none !important;
+    border-radius: 7px;
+
+    font-size: 15px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+/* START QUIZ hover */
+.quiz-setup-panel button:hover {
+    background: #157347 !important;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.16);
+}
+
+/* START QUIZ click */
+.quiz-setup-panel button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+/* =========================================================
+   END STEP 22B-2
+   ========================================================= */
+
+/* =========================================================
+   STEP 22B-3 — CONSISTENT ACTION BUTTONS
+   ========================================================= */
+
+/* Main quiz action buttons */
+button[onclick*="finishQuiz"],
+button[onclick*="reviewMistakes"],
+button[onclick*="retryMistakes"],
+button[onclick*="quizHistory"],
+button[onclick*="showQuizHistory"] {
+    min-height: 44px;
+    padding: 10px 18px;
+    margin-top: 10px;
+
+    color: white !important;
+    border: none !important;
+    border-radius: 7px;
+
+    font-size: 15px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        opacity 0.15s ease;
+}
+
+/* Finish Quiz */
+button[onclick*="finishQuiz"] {
+    background: #28a745 !important;
+}
+
+/* Review Mistakes */
+button[onclick*="reviewMistakes"] {
+    background: #6f42c1 !important;
+}
+
+/* Retry Mistakes */
+button[onclick*="retryMistakes"] {
+    background: #198754 !important;
+}
+
+/* Quiz History */
+button[onclick*="quizHistory"],
+button[onclick*="showQuizHistory"] {
+    background: #555 !important;
+}
+
+/* Hover effect */
+button[onclick*="finishQuiz"]:hover,
+button[onclick*="reviewMistakes"]:hover,
+button[onclick*="retryMistakes"]:hover,
+button[onclick*="quizHistory"]:hover,
+button[onclick*="showQuizHistory"]:hover {
+    opacity: 0.92;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.16);
+}
+
+/* Click feedback */
+button[onclick*="finishQuiz"]:active,
+button[onclick*="reviewMistakes"]:active,
+button[onclick*="retryMistakes"]:active,
+button[onclick*="quizHistory"]:active,
+button[onclick*="showQuizHistory"]:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+/* =========================================================
+   END STEP 22B-3
+   ========================================================= */
+
+/* =========================================================
+   STEP 22B-4 — PAGINATION BUTTON POLISH
+   ========================================================= */
+
+#prevBtn,
+#nextBtn {
+    min-height: 44px;
+    padding: 10px 18px;
+
+    background: white;
+    color: #0066cc;
+
+    border: 1px solid #0066cc;
+    border-radius: 7px;
+
+    font-size: 15px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease,
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+/* Hover */
+#prevBtn:hover:not(:disabled),
+#nextBtn:hover:not(:disabled) {
+    background: #0066cc;
+    color: white;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+
+/* Click feedback */
+#prevBtn:active:not(:disabled),
+#nextBtn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+/* Disabled Previous/Next */
+#prevBtn:disabled,
+#nextBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #f5f5f5;
+    color: #777;
+    border-color: #ccc;
+}
+
+/* Mobile spacing */
+@media (max-width: 600px) {
+    #prevBtn,
+    #nextBtn {
+        min-height: 44px;
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+}
+
+/* =========================================================
+   END STEP 22B-4
+   ========================================================= */
+
+/* =========================================================
+   STEP 22C-1 — LONG TEXT PROTECTION
+   ========================================================= */
+
+/* Prevent long quiz content from breaking the mobile layout */
+#quiz-container,
+.question-box,
+.quiz-question,
+.options,
+.options li,
+.options a,
+#quiz-info {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-wrap: break-word;
+}
+
+/* Keep long question text inside its card */
+.question-box {
+    overflow: hidden;
+}
+
+/* Keep long answer choices readable */
+.options a {
+    display: block;
+    max-width: 100%;
+}
+
+/* Prevent long words or technical terms from creating
+   horizontal overflow */
+.question-box *,
+#quiz-info * {
+    max-width: 100%;
+}
+
+/* =========================================================
+   END STEP 22C-1
+   ========================================================= */
+
+/* =========================================================
+   STEP 22C-2 — LONG SUBJECT & TOPIC PROTECTION
+   ========================================================= */
+
+/* Protect the quiz information bar on narrow screens */
+#quiz-info {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    overflow-wrap: anywhere;
+    word-break: normal;
+
+    line-height: 1.5;
+}
+
+/* Keep long subject/topic names inside the information bar */
+#quiz-info * {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+/* Mobile adjustment */
+@media (max-width: 600px) {
+    #quiz-info {
+        padding: 12px 14px;
+        font-size: 16px;
+        line-height: 1.45;
+    }
+}
+
+/* =========================================================
+   END STEP 22C-2
+   ========================================================= */
+
+/* =========================================================
+   STEP 22C-3 — MOBILE TABLE PROTECTION
+   ========================================================= */
+
+/* Keep tables usable on small screens */
+table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+}
+
+/* Allow table cells to wrap long content */
+th,
+td {
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+/* Make table containers scroll horizontally when necessary */
+div[style*="overflow-x:auto"] {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Keep table text readable on mobile */
+@media (max-width: 600px) {
+    table {
+        font-size: 13px;
+    }
+
+    th,
+    td {
+        padding: 8px !important;
+    }
+}
+
+/* =========================================================
+   END STEP 22C-3
+   ========================================================= */
+
+/* =========================================================
+   STEP 22C-4 — MOBILE TOUCH & BUTTON PROTECTION
+   ========================================================= */
+
+/* Make interactive controls comfortable to tap on phones */
+@media (max-width: 600px) {
+
+    button,
+    select,
+    input {
+        min-height: 44px;
+        box-sizing: border-box;
+    }
+
+    /* Prevent buttons from becoming too narrow */
+    button {
+        min-width: 44px;
+    }
+
+    /* Make quiz setup controls easy to use */
+    #subjectFilter,
+    #topicFilter,
+    #questionCount,
+    #searchBar {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Keep navigation buttons comfortable */
+    .pagination {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pagination button {
+        min-height: 44px;
+        padding: 10px 16px;
+    }
+
+    /* Make major action buttons easy to tap */
+    #startQuizButton,
+    #finishQuizBtn,
+    #reviewMistakesBtn,
+    #retryMistakesBtn,
+    #historyBtn {
+        width: 100%;
+        min-height: 44px;
+        box-sizing: border-box;
+    }
+
+    /* Study Priority buttons */
+    button[onclick*="startPriorityQuiz"] {
+        min-height: 44px !important;
+        width: 100%;
+    }
+}
+
+/* =========================================================
+   END STEP 22C-4
+   ========================================================= */
+
+/* =========================================================
+   STEP 22D-1 — HEADER & DASHBOARD REFINEMENT
+   ========================================================= */
+
+/* Main application title */
+h1 {
+    margin-top: 10px;
+    margin-bottom: 12px;
+    line-height: 1.2;
+    letter-spacing: -0.3px;
+}
+
+/* Application subtitle */
+.app-subtitle {
+    margin-top: 0;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+/* Score tracker */
+#scoreCounter,
+#attemptCounter {
+    font-weight: bold;
+}
+
+/* Give the score tracker better visual breathing room */
+#scoreCounter {
+    letter-spacing: 0.2px;
+}
+
+/* Quiz Setup heading */
+.quiz-setup-title {
+    margin-top: 28px;
+    margin-bottom: 10px;
+    line-height: 1.25;
+}
+
+/* Quiz Setup description */
+.quiz-setup-subtitle {
+    margin-top: 0;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* Improve spacing around the main setup panel */
+.quiz-setup-panel {
+    margin-top: 10px;
+}
+
+/* Keep the opening dashboard comfortable on smaller screens */
+@media (max-width: 600px) {
+
+    h1 {
+        font-size: 30px;
+        line-height: 1.2;
+        margin-bottom: 12px;
+    }
+
+    .app-subtitle {
+        font-size: 17px;
+        margin-bottom: 20px;
+    }
+
+    .quiz-setup-title {
+        font-size: 25px;
+        margin-top: 24px;
+    }
+
+    .quiz-setup-subtitle {
+        font-size: 16px;
+        margin-bottom: 18px;
+    }
+}
+
+/* =========================================================
+   END STEP 22D-1
+   ========================================================= */
+
+/* =========================================================
+   STEP 22D-2 — QUIZ SETUP REFINEMENT
+   ========================================================= */
+
+/* Give the setup panel a cleaner visual structure */
+.quiz-setup-panel {
+    padding: 20px;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+/* Labels */
+.quiz-setup-panel label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: bold;
+}
+
+/* Inputs and dropdowns inside the setup panel */
+.quiz-setup-panel select,
+.quiz-setup-panel input {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Consistent spacing between setup controls */
+.quiz-setup-panel select,
+.quiz-setup-panel input {
+    margin-bottom: 14px;
+}
+
+/* Search field */
+.quiz-setup-panel input[type="text"] {
+    padding: 12px 14px;
+    border-radius: 7px;
+}
+
+/* Dropdowns */
+.quiz-setup-panel select {
+    padding: 12px 14px;
+    border-radius: 7px;
+}
+
+/* Start Quiz button */
+#startQuizButton {
+    margin-top: 6px;
+    min-height: 44px;
+    padding: 11px 18px;
+    font-weight: bold;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+/* Mobile setup refinement */
+@media (max-width: 600px) {
+
+    .quiz-setup-panel {
+        padding: 18px;
+    }
+
+    .quiz-setup-panel label {
+        margin-bottom: 7px;
+    }
+
+    .quiz-setup-panel select,
+    .quiz-setup-panel input {
+        margin-bottom: 14px;
+    }
+
+    #startQuizButton {
+        width: 100%;
+        min-height: 46px;
+    }
+}
+
+/* =========================================================
+   END STEP 22D-2
+   ========================================================= */
+
+/* =========================================================
+   STEP 22D-3 — RESULTS & FEEDBACK REFINEMENT
+   ========================================================= */
+
+/* Main quiz results card */
+#finalResults {
+    width: 100%;
+    max-width: 900px;
+    margin: 25px auto;
+    padding: 24px;
+    box-sizing: border-box;
+    border-radius: 12px;
+    text-align: center;
+}
+
+/* Quiz Complete heading */
+#finalResults > div:first-child {
+    line-height: 1.3;
+}
+
+/* Main score display */
+#finalScoreDisplay {
+    margin-top: 12px;
+    margin-bottom: 10px;
+    font-size: 28px !important;
+    font-weight: bold;
+    line-height: 1.3;
+}
+
+/* Answer summary / feedback */
+#finalAnswerDisplay {
+    margin-top: 10px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+/* Keep result content inside the card */
+#finalResults * {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+}
+
+/* Make the results comfortable on mobile */
+@media (max-width: 600px) {
+
+    #finalResults {
+        margin: 20px 0;
+        padding: 20px 16px;
+        border-radius: 10px;
+    }
+
+    #finalScoreDisplay {
+        font-size: 26px !important;
+    }
+
+    #finalAnswerDisplay {
+        font-size: 16px;
+        line-height: 1.6;
+    }
+}
+
+/* =========================================================
+   END STEP 22D-3
+   ========================================================= */
+
+/* =========================================================
+   STEP 22D-4 — FINAL UI CONSISTENCY CHECK
+   ========================================================= */
+
+/* Use predictable sizing throughout the application */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Keep media elements inside their containers */
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Keep headings readable and naturally wrapped */
+h1,
+h2,
+h3,
+h4 {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    line-height: 1.3;
+}
+
+/* Keep form controls consistent with the application */
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+/* Prevent long text from breaking cards */
+.question-box,
+#quiz-info,
+#finalResults,
+#historyPanel {
+    overflow-wrap: anywhere;
+}
+
+/* Keep dynamically generated content inside its container */
+.question-box *,
+#quiz-info *,
+#finalResults *,
+#historyPanel * {
+    max-width: 100%;
+}
+
+/* Final mobile spacing protection */
+@media (max-width: 600px) {
+
+    h1,
+    h2,
+    h3 {
+        overflow-wrap: anywhere;
+    }
+
+    button {
+        font-family: inherit;
+    }
+
+    input,
+    select,
+    textarea {
+        max-width: 100%;
+    }
+}
+
+/* =========================================================
+   END STEP 22D-4
+   ========================================================= */
+
+/* 22D-3 — Mobile question card polish */
+@media (max-width: 600px) {
+    .question-box {
+        padding: 18px 14px;
+        margin-bottom: 16px;
+    }
+
+    .question-box h3 {
+        font-size: 18px;
+        line-height: 1.5;
+    }
+}
+
+    
+
+/* =========================================================
+   22D10 — LOGIN REQUIRED / CONTROLLED USER ACCESS
+   ========================================================= */
+#loginScreen {
+    max-width: 460px;
+    margin: 60px auto;
+    padding: 28px 24px;
+    background: #ffffff;
+    border: 1px solid #d9d9d9;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+#loginScreen h1 {
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+#loginScreen p {
+    color: #555;
+    margin-top: 0;
+}
+
+#loginScreen input {
+    width: 100%;
+    padding: 12px 14px;
+    margin: 8px 0;
+    border: 1px solid #cfcfcf;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+#loginButton,
+#logoutButton {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#loginButton {
+    margin-top: 10px;
+    background: #0066cc;
+    color: #ffffff;
+}
+
+#loginButton:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+#loginError {
+    display: none;
+    margin-top: 12px;
+    padding: 10px;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    color: #721c24;
+    font-size: 14px;
+}
+
+#authStatusBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding: 10px 12px;
+    background: #eef5ff;
+    border: 1px solid #c9ddff;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+#authUserEmail {
+    overflow-wrap: anywhere;
+    color: #245a8d;
+    font-weight: bold;
+}
+
+#logoutButton {
+    width: auto;
+    padding: 8px 12px;
+    background: #6c757d;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+#authLoading {
+    color: #555;
+    font-size: 14px;
+}
+
+@media (max-width: 600px) {
+    #loginScreen {
+        margin: 25px auto;
+        padding: 22px 18px;
+    }
+
+    #authStatusBar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    #logoutButton {
+        width: 100%;
+    }
+}
+/* =========================================================
+   END STEP 22D10
+   ========================================================= */
+
+
+/* =========================================================
+   PASSWORD MANAGEMENT — CHANGE / RECOVERY
+   ========================================================= */
+
+#changePasswordPanel,
+#passwordRecoveryScreen {
+    max-width: 460px;
+    margin: 25px auto;
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #d9d9d9;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+#changePasswordPanel h2,
+#passwordRecoveryScreen h2 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.password-form input {
+    width: 100%;
+    padding: 12px 14px;
+    margin: 8px 0;
+    border: 1px solid #cfcfcf;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.password-form button {
+    width: 100%;
+    min-height: 44px;
+    padding: 11px 16px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 7px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#changePasswordButton {
+    width: auto;
+    padding: 8px 12px;
+    background: #198754;
+    color: #ffffff;
+    border: none;
+    border-radius: 7px;
+    font-weight: bold;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+#passwordSaveButton,
+#passwordRecoverySaveButton {
+    background: #198754;
+    color: #ffffff;
+}
+
+#passwordCancelButton {
+    background: #6c757d;
+    color: #ffffff;
+}
+
+.password-message {
+    display: none;
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.password-message.success {
+    display: block;
+    background: #dff0d8;
+    border: 1px solid #b7d7a8;
+    color: #28521c;
+}
+
+.password-message.error {
+    display: block;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+#forgotPasswordLink {
+    display: inline-block;
+    margin-top: 10px;
+    color: #0066cc;
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    font-size: 14px;
+}
+
+#passwordRecoveryScreen {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    #changePasswordPanel,
+    #passwordRecoveryScreen {
+        margin: 20px 0;
+        padding: 20px 16px;
+    }
+
+    #changePasswordButton {
+        width: 100%;
+    }
+}
+
+/* =========================================================
+   END PASSWORD MANAGEMENT
+   ========================================================= */
+
+    </style>
+</head>
+<body>
+
+
+<div id="loginScreen">
+    <h1>🔐 RAAL LET Review Hub</h1>
+    <p>Authorized users only. Please sign in using the email address and password provided by the administrator.</p>
+
+    <form id="loginForm" autocomplete="on">
+        <input
+            type="email"
+            id="loginEmail"
+            name="email"
+            placeholder="Email address"
+            autocomplete="username"
+            required
+        >
+        <input
+            type="password"
+            id="loginPassword"
+            name="password"
+            placeholder="Password"
+            autocomplete="current-password"
+            required
+        >
+        <button type="submit" id="loginButton">SIGN IN</button>
+    </form>
+
+    <button type="button" id="forgotPasswordLink">Forgot your password?</button>
+
+    <div id="authLoading">Checking access...</div>
+    <div id="loginError" role="alert"></div>
+</div>
+
+<div id="passwordRecoveryScreen">
+    <h2>🔐 Set a New Password</h2>
+    <p style="text-align:center; color:#555;">
+        You arrived through a password-recovery link. Please create a new password for your account.
+    </p>
+
+    <form id="passwordRecoveryForm" class="password-form">
+        <input
+            type="password"
+            id="recoveryNewPassword"
+            placeholder="New password"
+            autocomplete="new-password"
+            minlength="6"
+            required
+        >
+
+        <input
+            type="password"
+            id="recoveryConfirmPassword"
+            placeholder="Confirm new password"
+            autocomplete="new-password"
+            minlength="6"
+            required
+        >
+
+        <button type="submit" id="passwordRecoverySaveButton">SET NEW PASSWORD</button>
+    </form>
+
+    <div id="passwordRecoveryMessage" class="password-message" role="alert"></div>
+</div>
+
+<div id="changePasswordPanel" style="display:none;">
+    <h2>🔐 Change Password</h2>
+    <p style="text-align:center; color:#555;">Create a new password for your account.</p>
+
+    <form id="changePasswordForm" class="password-form">
+        <input
+            type="password"
+            id="newPassword"
+            placeholder="New password"
+            autocomplete="new-password"
+            minlength="6"
+            required
+        >
+
+        <input
+            type="password"
+            id="confirmNewPassword"
+            placeholder="Confirm new password"
+            autocomplete="new-password"
+            minlength="6"
+            required
+        >
+
+        <button type="submit" id="passwordSaveButton">UPDATE PASSWORD</button>
+        <button type="button" id="passwordCancelButton">CANCEL</button>
+    </form>
+
+    <div id="changePasswordMessage" class="password-message" role="alert"></div>
+</div>
+
+<div id="appContent" style="display:none;">
+    <div id="authStatusBar">
+        <span>Signed in as <span id="authUserEmail"></span></span>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button type="button" id="changePasswordButton">Change Password</button>
+            <button type="button" id="logoutButton">Sign Out</button>
+        </div>
+    </div>
+
+
+   <h1>📚 RAAL LET Review Hub</h1>
+<p class="app-subtitle">Your Interactive Companion for LET Preparation</p>
+
+<div style="background: #e2f0d9; padding: 12px; margin-bottom: 20px; border-radius: 6px; font-weight: bold; border: 1px solid #385723; color: #385723;">
+    Score Tracker: <span id="scoreCounter">0</span> / <span id="attemptCounter">0</span> answered correctly
+</div>
+    <h2 class="quiz-setup-title">Quiz Setup</h2>
+<p class="quiz-setup-subtitle">Choose your topic, search questions, and set the number of questions.</p>
+<div class="quiz-setup-panel">
+   <!-- Subject Filter -->
+<div class="controls">
+    <label for="subjectFilter">Subject:</label>
+   <select id="subjectFilter" onchange="updateTopicFilter(); handleSearch()">
+        <option value="">All Subjects</option>
+    </select>
+</div>
+  <div class="controls">
+    <input type="text" id="searchBar" placeholder="Search questions..." oninput="handleSearch()">
+</div>
+
+<div class="controls">
+    <select id="topicFilter" onchange="handleSearch()">
+        <option value="">All Topics</option>
+    </select>
+</div>
+<div class="controls">
+    <label for="questionCount">Number of Questions:</label>
+    <select id="questionCount" onchange="applyQuestionCount()">
+        <option value="0">All Questions</option>
+        <option value="20">20 Questions</option>
+        <option value="50">50 Questions</option>
+        <option value="100">100 Questions</option>
+    </select>
+</div>
+<button type="button" id="startQuizButton" onclick="startQuiz()">START QUIZ</button>
+</div>
+
+    <!-- 22D19 — Question-bank loading error state -->
+    <div id="questionLoadError" role="alert" aria-live="polite" style="display:none; margin:15px 0; padding:14px; border:1px solid #dc3545; border-radius:8px; background:#f8d7da; color:#721c24; text-align:center;">
+        <div id="questionLoadErrorMessage" style="font-weight:bold; margin-bottom:10px;"></div>
+        <button type="button" id="retryQuestionLoadButton" onclick="loadQuestionsFromSupabase()" style="padding:10px 18px; font-weight:bold; background:#dc3545; color:white; border:none; border-radius:6px; cursor:pointer;">TRY AGAIN</button>
+    </div>
+
+    <!-- Container where JS will load the questions -->
+   <div id="quiz-info"></div>
+<div id="quiz-container"></div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination">
+        <button id="prevBtn" onclick="changePage(-1)">Previous</button>
+        <span id="pageInfo">Page 1</span>
+        <button id="nextBtn" onclick="changePage(1)">Next</button>
+    </div>
+        <!-- This is the closing div you found! -->
+
+    <!-- 1. PASTE THE NEW BUTTON AND MESSAGE BOX HERE: -->
+    <button id="finishQuizBtn" style="width: 100%; padding: 12px; font-size: 16px; font-weight: bold; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; margin-bottom: 10px;">Finish Quiz & View Feedback</button>
+
+<div id="finalResults" style="display: none; text-align: center; padding: 20px; margin-top: 20px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 10px; background: #f8f8f8;">
+    <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">🏆 Quiz Complete!</div>
+    <div id="finalScoreDisplay" style="font-size: 20px; font-weight: bold;"></div>
+<div id="finalAnsweredDisplay" style="font-size: 18px; margin-top: 8px;"></div>
+<div id="finalCorrectDisplay" style="font-size: 18px; margin-top: 8px;"></div>
+<div id="finalIncorrectDisplay" style="font-size: 18px; margin-top: 8px;"></div>
+
+    <div id="finalPercentageDisplay" style="font-size: 18px; margin-top: 8px;"></div>
+<div id="finalPerformanceDisplay" style="font-size: 18px; font-weight: bold; margin-top: 10px;"></div>
+</div>
+
+
+    <button type="button" id="homeButton"
+    style="display:none; width:100%; margin-top:10px; padding:12px; font-size:16px; font-weight:bold; background:#0066cc; color:white; border:none; border-radius:7px; cursor:pointer;">
+    🏠 Back to Home
+</button>
+
+<div id="motivationalMessage" style="display: none; font-size: 16px; font-weight: bold; text-align: center; padding: 15px; margin-top: 10px; margin-bottom: 20px; border-radius: 6px; line-height: 1.5;"></div>
+
+<button id="reviewMistakesBtn" style="width: 100%; padding: 12px; font-size: 16px; font-weight: bold; background-color: #6f42c1; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px;">
+Review Mistakes
+</button>
+<button id="retryMistakesBtn" style="width: 100%; padding: 12px; font-size: 16px; font-weight: bold; background-color: #198754; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px;">
+Retry Mistakes
+</button>
+
+<!-- Quiz History -->
+<button type="button" id="quizHistoryBtn"
+    style="width:100%; margin-top:10px; padding:12px; font-size:16px; font-weight:bold; background:#555; color:white; border:none; border-radius:6px; cursor:pointer;">
+    Quiz History
+</button>
+
+<div id="quizHistoryPanel"
+     style="display:none; margin-top:15px; padding:20px; border:1px solid #ccc; border-radius:8px; background:#f8f8f8;">
+    <h2 style="text-align:center;">📊 Quiz History</h2>
+    <p style="text-align:center;">Your previous quiz attempts will appear here.</p>
+</div>
+
+<div id="mistakesReviewContainer" style="display: none; margin-top: 20px;"></div>
+    <!-- Your footer code starts right here -->
+    <footer style="text-align: center; margin-top: 40px; padding-top: 20px;">
+
+    <footer style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc; color: #666; font-size: 14px;">
+        <p>&copy; 2026 <strong>Racquel Awisi Abretan Luban</strong>. All Rights Reserved.</p>
+        <p style="font-size: 11px; margin-top: 5px; color: #999;">Proprietary Question Bank Engine v1.2</p>
+    </footer>
+
+</div>
+
+    <script>
+const supabaseUrl = 'https://xxqbavobvxqjmtrkeudm.supabase.co';
+const supabaseKey = 'sb_publishable_Bs0xToeycPzPP1bugt29uA_Ru3Mor9w';
+const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+let supabaseQuestions = [];
+
+// =========================================================
+// 22D10 — AUTHENTICATION / ACCESS CONTROL
+// 22D19 — ERROR HANDLING / PRODUCTION SAFETY
+// =========================================================
+const loginScreen = document.getElementById('loginScreen');
+const appContent = document.getElementById('appContent');
+const loginForm = document.getElementById('loginForm');
+const loginEmail = document.getElementById('loginEmail');
+const loginPassword = document.getElementById('loginPassword');
+const loginButton = document.getElementById('loginButton');
+const loginError = document.getElementById('loginError');
+const authLoading = document.getElementById('authLoading');
+const authUserEmail = document.getElementById('authUserEmail');
+const logoutButton = document.getElementById('logoutButton');
+
+const changePasswordButton = document.getElementById('changePasswordButton');
+const changePasswordPanel = document.getElementById('changePasswordPanel');
+const changePasswordForm = document.getElementById('changePasswordForm');
+const newPassword = document.getElementById('newPassword');
+const confirmNewPassword = document.getElementById('confirmNewPassword');
+const passwordCancelButton = document.getElementById('passwordCancelButton');
+const changePasswordMessage = document.getElementById('changePasswordMessage');
+
+const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+const passwordRecoveryScreen = document.getElementById('passwordRecoveryScreen');
+const passwordRecoveryForm = document.getElementById('passwordRecoveryForm');
+const recoveryNewPassword = document.getElementById('recoveryNewPassword');
+const recoveryConfirmPassword = document.getElementById('recoveryConfirmPassword');
+const passwordRecoverySaveButton = document.getElementById('passwordRecoverySaveButton');
+const passwordRecoveryMessage = document.getElementById('passwordRecoveryMessage');
+
+function showPasswordMessage(element, message, type) {
+    if (!element) return;
+    element.textContent = message;
+    element.className = `password-message ${type}`;
+}
+
+function clearPasswordMessage(element) {
+    if (!element) return;
+    element.textContent = '';
+    element.className = 'password-message';
+}
+
+function openChangePasswordPanel() {
+    if (!changePasswordPanel) return;
+    changePasswordPanel.style.display = 'block';
+    changePasswordPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    clearPasswordMessage(changePasswordMessage);
+    newPassword.value = '';
+    confirmNewPassword.value = '';
+    newPassword.focus();
+}
+
+function closeChangePasswordPanel() {
+    if (!changePasswordPanel) return;
+    changePasswordPanel.style.display = 'none';
+    clearPasswordMessage(changePasswordMessage);
+    newPassword.value = '';
+    confirmNewPassword.value = '';
+}
+
+function showPasswordRecoveryScreen() {
+    if (loginScreen) loginScreen.style.display = 'none';
+    if (appContent) appContent.style.display = 'none';
+    if (passwordRecoveryScreen) {
+        passwordRecoveryScreen.style.display = 'block';
+        passwordRecoveryScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    clearPasswordMessage(passwordRecoveryMessage);
+    if (recoveryNewPassword) recoveryNewPassword.value = '';
+    if (recoveryConfirmPassword) recoveryConfirmPassword.value = '';
+    if (recoveryNewPassword) recoveryNewPassword.focus();
+}
+
+async function sendPasswordRecoveryEmail() {
+    const email = loginEmail.value.trim();
+
+    if (!email) {
+        showLoginError('Please enter your email address first, then click "Forgot your password?".');
+        loginEmail.focus();
+        return;
+    }
+
+    clearLoginError();
+    forgotPasswordLink.disabled = true;
+    forgotPasswordLink.textContent = 'SENDING...';
+
+    const redirectTo = window.location.href.split('#')[0];
+
+    const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+        redirectTo
+    });
+
+    forgotPasswordLink.disabled = false;
+    forgotPasswordLink.textContent = 'Forgot your password?';
+
+    if (error) {
+        console.error('PASSWORD RECOVERY ERROR:', error);
+        showLoginError('Unable to send the password recovery email. Please try again.');
+        return;
+    }
+
+    showLoginError('Password recovery instructions were sent to your email. Open the link in that email to create a new password.');
+    loginError.style.background = '#dff0d8';
+    loginError.style.borderColor = '#b7d7a8';
+    loginError.style.color = '#28521c';
+}
+
+function showLoginError(message) {
+    loginError.textContent = message;
+    loginError.style.display = 'block';
+}
+
+function clearLoginError() {
+    loginError.textContent = '';
+    loginError.style.display = 'none';
+}
+
+function showLoggedInApp(user) {
+    loginScreen.style.display = 'none';
+    if (passwordRecoveryScreen) passwordRecoveryScreen.style.display = 'none';
+    appContent.style.display = 'block';
+    authLoading.style.display = 'none';
+    authUserEmail.textContent = user?.email || '';
+}
+
+function showLoginScreen() {
+    appContent.style.display = 'none';
+    if (passwordRecoveryScreen) passwordRecoveryScreen.style.display = 'none';
+    loginScreen.style.display = 'block';
+    authLoading.style.display = 'none';
+    authUserEmail.textContent = '';
+    loginPassword.value = '';
+    closeChangePasswordPanel();
+}
+
+async function startAuthenticatedApp(user) {
+    showLoggedInApp(user);
+    await loadQuestionsFromSupabase();
+}
+
+async function initializeAuthentication() {
+    clearLoginError();
+    authLoading.style.display = 'block';
+
+    const { data: { user }, error } = await _supabase.auth.getUser();
+
+    if (error) {
+        console.error('AUTH CHECK ERROR:', error);
+    }
+
+    if (user) {
+        await startAuthenticatedApp(user);
+    } else {
+        showLoginScreen();
+    }
+}
+
+loginForm.addEventListener('submit', async function(event) {
+    event.preventDefault();
+    clearLoginError();
+
+    const email = loginEmail.value.trim();
+    const password = loginPassword.value;
+
+    if (!email || !password) {
+        showLoginError('Please enter your email address and password.');
+        return;
+    }
+
+    loginButton.disabled = true;
+    loginButton.textContent = 'SIGNING IN...';
+
+    const { data, error } = await _supabase.auth.signInWithPassword({
+        email,
+        password
+    });
+
+    loginButton.disabled = false;
+    loginButton.textContent = 'SIGN IN';
+
+    if (error) {
+        console.error('LOGIN ERROR:', error);
+        showLoginError('Unable to sign in. Please check your email address and password.');
+        return;
+    }
+
+    if (data?.user) {
+        await startAuthenticatedApp(data.user);
+    }
+});
+
+// =========================================================
+// PASSWORD MANAGEMENT — CHANGE PASSWORD
+// =========================================================
+
+if (changePasswordButton) {
+    changePasswordButton.addEventListener('click', openChangePasswordPanel);
+}
+
+if (passwordCancelButton) {
+    passwordCancelButton.addEventListener('click', closeChangePasswordPanel);
+}
+
+if (changePasswordForm) {
+    changePasswordForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        clearPasswordMessage(changePasswordMessage);
+
+        const password = newPassword.value;
+        const confirmPassword = confirmNewPassword.value;
+
+        if (password.length < 6) {
+            showPasswordMessage(
+                changePasswordMessage,
+                'Password must contain at least 6 characters.',
+                'error'
+            );
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            showPasswordMessage(
+                changePasswordMessage,
+                'The passwords do not match.',
+                'error'
+            );
+            return;
+        }
+
+        document.getElementById('passwordSaveButton').disabled = true;
+        document.getElementById('passwordSaveButton').textContent = 'UPDATING...';
+
+        const { error } = await _supabase.auth.updateUser({
+            password: password
+        });
+
+        document.getElementById('passwordSaveButton').disabled = false;
+        document.getElementById('passwordSaveButton').textContent = 'UPDATE PASSWORD';
+
+        if (error) {
+            console.error('CHANGE PASSWORD ERROR:', error);
+            showPasswordMessage(
+                changePasswordMessage,
+                'Unable to update your password. Please try again.',
+                'error'
+            );
+            return;
+        }
+
+        showPasswordMessage(
+            changePasswordMessage,
+            'Password updated successfully.',
+            'success'
+        );
+
+        newPassword.value = '';
+        confirmNewPassword.value = '';
+    });
+}
+
+// =========================================================
+// PASSWORD MANAGEMENT — FORGOT PASSWORD / RECOVERY
+// =========================================================
+
+if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener('click', sendPasswordRecoveryEmail);
+}
+
+if (passwordRecoveryForm) {
+    passwordRecoveryForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        clearPasswordMessage(passwordRecoveryMessage);
+
+        const password = recoveryNewPassword.value;
+        const confirmPassword = recoveryConfirmPassword.value;
+
+        if (password.length < 6) {
+            showPasswordMessage(
+                passwordRecoveryMessage,
+                'Password must contain at least 6 characters.',
+                'error'
+            );
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            showPasswordMessage(
+                passwordRecoveryMessage,
+                'The passwords do not match.',
+                'error'
+            );
+            return;
+        }
+
+        passwordRecoverySaveButton.disabled = true;
+        passwordRecoverySaveButton.textContent = 'SAVING...';
+
+        const { error } = await _supabase.auth.updateUser({
+            password: password
+        });
+
+        passwordRecoverySaveButton.disabled = false;
+        passwordRecoverySaveButton.textContent = 'SET NEW PASSWORD';
+
+        if (error) {
+            console.error('PASSWORD RECOVERY UPDATE ERROR:', error);
+            showPasswordMessage(
+                passwordRecoveryMessage,
+                'Unable to set the new password. Please request a new recovery email and try again.',
+                'error'
+            );
+            return;
+        }
+
+        showPasswordMessage(
+            passwordRecoveryMessage,
+            'Your password has been changed successfully. You can now sign in with your new password.',
+            'success'
+        );
+
+        recoveryNewPassword.value = '';
+        recoveryConfirmPassword.value = '';
+
+        // Give the user a short moment to see the success message,
+        // then return to the normal login screen.
+        setTimeout(async () => {
+            await _supabase.auth.signOut();
+            showLoginScreen();
+        }, 1800);
+    });
+}
+
+
+logoutButton.addEventListener('click', async function() {
+    const { error } = await _supabase.auth.signOut();
+
+    if (error) {
+        console.error('SIGN OUT ERROR:', error);
+        showLoginError('Unable to sign out. Please try again.');
+        return;
+    }
+
+    window.scrollTo(0, 0);
+    showLoginScreen();
+    loginEmail.focus();
+});
+
+_supabase.auth.onAuthStateChange((event, session) => {
+    console.log('AUTH STATE EVENT:', event);
+
+    if (event === 'PASSWORD_RECOVERY') {
+        showPasswordRecoveryScreen();
+        return;
+    }
+
+    if (event === 'SIGNED_OUT' || !session) {
+        showLoginScreen();
+    }
+});
+
+initializeAuthentication();
+
+async function loadQuestionsFromSupabase() {
+
+    const errorBox = document.getElementById('questionLoadError');
+    const errorMessage = document.getElementById('questionLoadErrorMessage');
+    const retryButton = document.getElementById('retryQuestionLoadButton');
+    const startButton = document.getElementById('startQuizButton');
+
+    function showQuestionLoadError(message) {
+        if (errorMessage) errorMessage.textContent = message;
+        if (errorBox) errorBox.style.display = 'block';
+        if (startButton) startButton.disabled = true;
+        if (retryButton) {
+            retryButton.disabled = false;
+            retryButton.textContent = 'TRY AGAIN';
+        }
+    }
+
+    function clearQuestionLoadError() {
+        if (errorBox) errorBox.style.display = 'none';
+        if (errorMessage) errorMessage.textContent = '';
+        if (startButton) startButton.disabled = false;
+    }
+
+    clearQuestionLoadError();
+    if (startButton) startButton.disabled = true;
+    if (retryButton) {
+        retryButton.disabled = true;
+        retryButton.textContent = 'LOADING...';
+    }
+
+    try {
+        /*
+         * IMPORTANT:
+         * Supabase/PostgREST returns a limited number of rows per request.
+         * The RAAL question bank now contains more than 1,000 questions,
+         * so one .select('*') request is not enough to load the entire bank.
+         *
+         * We therefore fetch the questions in batches and combine them.
+         * This does NOT change the database and does NOT delete/replace data.
+         */
+        const PAGE_SIZE = 1000;
+        let allQuestions = [];
+        let from = 0;
+
+        while (true) {
+            const batchRequest = _supabase
+                .from('questions')
+                .select('*')
+                .not('question', 'is', null)
+                .neq('question', '')
+                .order('id')
+                .range(from, from + PAGE_SIZE - 1);
+
+            const timeoutRequest = new Promise((resolve) => {
+                setTimeout(() => resolve({
+                    data: null,
+                    error: new Error('Question-bank request timed out.')
+                }), 10000);
+            });
+
+            const { data: batch, error } =
+                await Promise.race([batchRequest, timeoutRequest]);
+
+            if (error) {
+                console.error("SUPABASE ERROR WHILE LOADING BATCH:", error);
+                showQuestionLoadError(
+                    'Unable to load the complete question bank. Please check your internet connection and try again.'
+                );
+                return;
+            }
+
+            if (!batch || batch.length === 0) {
+                break;
+            }
+
+            allQuestions = allQuestions.concat(batch);
+
+            console.log(
+                `Question bank batch loaded: ${from + 1}-${from + batch.length} (total loaded: ${allQuestions.length})`
+            );
+
+            // A short batch means we have reached the end.
+            if (batch.length < PAGE_SIZE) {
+                break;
+            }
+
+            from += PAGE_SIZE;
+        }
+
+        if (allQuestions.length === 0) {
+            console.error("SUPABASE CONNECTED, BUT NO QUESTIONS WERE FOUND.");
+            showQuestionLoadError(
+                'No questions are currently available. Please try again later or contact the administrator.'
+            );
+            return;
+        }
+
+        // Store the COMPLETE question bank in the existing application variable.
+        supabaseQuestions = allQuestions;
+
+        console.log(
+            `COMPLETE QUESTION BANK LOADED: ${supabaseQuestions.length} questions`
+        );
+
+        clearQuestionLoadError();
+
+        if (retryButton) {
+            retryButton.disabled = false;
+            retryButton.textContent = 'TRY AGAIN';
+        }
+
+        // Populate Subject Filter
+        const subjectFilter = document.getElementById('subjectFilter');
+
+        const subjects = [...new Set(
+            supabaseQuestions
+                .map(q => typeof q.subject === 'string' ? q.subject.trim() : q.subject)
+                .filter(subject => subject && subject !== '')
+        )].sort();
+
+        subjectFilter.innerHTML = '<option value="">All Subjects</option>';
+
+        subjects.forEach(subject => {
+            const option = document.createElement('option');
+            option.value = subject;
+            option.textContent = subject;
+            subjectFilter.appendChild(option);
+        });
+
+        // Populate Topic Filter
+        const topicFilter = document.getElementById('topicFilter');
+
+        const topics = [...new Set(
+            supabaseQuestions
+                .map(q => q.topic)
+                .filter(topic => topic && topic.trim() !== '')
+        )].sort();
+
+        topicFilter.innerHTML = '<option value="">All Topics</option>';
+
+        topics.forEach(topic => {
+            const option = document.createElement('option');
+            option.value = topic;
+            option.textContent = topic;
+            topicFilter.appendChild(option);
+        });
+
+        // Prepare the complete filtered question set.
+        filteredQuestions = supabaseQuestions
+            .filter(q =>
+                q.question &&
+                q.choice_a &&
+                q.choice_b &&
+                q.choice_c &&
+                q.choice_d &&
+                q.correct_answer
+            )
+            .map(q => {
+                let correctAnswer = q.correct_answer;
+
+                if (correctAnswer) {
+                    correctAnswer = correctAnswer.trim().toUpperCase();
+
+                    if (correctAnswer === 'A') correctAnswer = q.choice_a;
+                    else if (correctAnswer === 'B') correctAnswer = q.choice_b;
+                    else if (correctAnswer === 'C') correctAnswer = q.choice_c;
+                    else if (correctAnswer === 'D') correctAnswer = q.choice_d;
+                }
+
+                return {
+                    id: q.id,
+                    question: q.question,
+                    options: [
+                        q.choice_a,
+                        q.choice_b,
+                        q.choice_c,
+                        q.choice_d
+                    ],
+                    correctAnswer: correctAnswer,
+                    rationale: q.rationale
+                };
+            });
+
+        console.log("Supabase questions:", supabaseQuestions);
+        console.log(
+            `Usable questions after validation: ${filteredQuestions.length}`
+        );
+
+    } catch (unexpectedError) {
+        console.error("UNEXPECTED QUESTION-LOAD ERROR:", unexpectedError);
+        showQuestionLoadError(
+            'We could not load the question bank right now. Please try again. If the problem continues, contact the administrator.'
+        );
+    }
+}
+
+// Security: Prevents casual users from right-clicking or highlighting your test questions
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+document.addEventListener('keydown', function(e) {
+    // Blocks Ctrl+U (View Source) and Ctrl+Shift+I (Developer Tools)
+    if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+    }
+    if (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'c' || e.key === 'C')) {
+        e.preventDefault();
+    }
+});
+
+
+        // Runtime variables
+        let filteredQuestions = [];
+        let currentPage = 1;
+        const itemsPerPage = 50;
+	let totalCorrectAnswers = 0;
+	let totalUserAttempts = 0;
+	let incorrectQuestions = [];
+
+        // 2. RENDER ENGINE: Builds HTML dynamically
+        function renderQuestions() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = ""; // Clear current view
+
+            // Calculate pagination indices
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageItems = filteredQuestions.slice(startIndex, endIndex);
+
+            if (pageItems.length === 0) {
+                container.innerHTML = "<p style='text-align:center; padding:20px; font-size:16px;'>Select your subject, topic, and number of questions, then click START QUIZ to begin.</p>";
+                updatePaginationControls();
+                return;
+            }
+
+            pageItems.forEach((q) => {
+                const qBox = document.createElement('div');
+                qBox.className = 'question-box';
+
+           // Build question card
+qBox.innerHTML = `
+    <h3>Q: ${q.question}</h3>
+    <ul class="options"></ul>
+    <div id="rat-${q.id}" class="rationale" style="display: none;">
+        <strong>Correct!</strong> ${q.rationale}
+    </div>
+`;
+
+// Build actual answer cards
+const optionsList = qBox.querySelector('.options');
+
+q.options.forEach(opt => {
+    const li = document.createElement('li');
+
+    const answerCard = document.createElement('a');
+    answerCard.className = 'answer-card';
+    answerCard.href = '#';
+    answerCard.textContent = opt;
+
+    answerCard.addEventListener('click', function(event) {
+        checkAnswer(event, opt, q.correctAnswer, `rat-${q.id}`);
+    });
+
+    li.appendChild(answerCard);
+    optionsList.appendChild(li);
+});
+              
+               container.appendChild(qBox);
+            });
+
+            updatePaginationControls();
+        }
+
+        // 3. LOGIC: Handle click answer validation
+       // 3. LOGIC: Handle click answer validation
+function checkAnswer(event, selected, correct, rationaleId) {
+    event.preventDefault();
+    const ratBox = document.getElementById(rationaleId);
+const selectedCard = event.currentTarget;
+const cleanRationale = ratBox.innerHTML.replace(
+    /^\s*<strong>Correct!<\/strong>\s*/i,
+    ''
+);
+    
+    // Check if this question was already answered to avoid double-scoring the same box
+    if (ratBox.style.display === 'block') {
+        return; // Stops execution if they click options on an already-resolved question
+    }
+    
+    // Increase total attempts counter every time an unanswered question gets clicked
+    totalUserAttempts++;
+
+ if (selected.trim().toLowerCase() === correct.trim().toLowerCase()) {
+    selectedCard.classList.add('correct');
+    ratBox.classList.add('feedback-correct');
+   ratBox.innerHTML = `<strong style="color:green;">✓ Correct!</strong><br><br>` +
+    cleanRationale;
+    ratBox.style.display = 'block';
+    totalCorrectAnswers++;
+} else {
+    selectedCard.classList.add('incorrect');
+
+    const questionId = rationaleId.replace('rat-', '');
+    const questionData = supabaseQuestions.find(
+        q => String(q.id) === String(questionId)
+    );
+
+ incorrectQuestions.push({
+    question: questionData ? questionData.question : '',
+  options: Array.from(selectedCard.closest('.question-box').querySelectorAll('.answer-card')).map(card => card.textContent.trim()),
+    selected: selected,
+    correct: correct,
+    rationale: questionData ? questionData.rationale : '',
+    rationaleId: rationaleId
+});
+
+    ratBox.classList.add('feedback-incorrect');
+
+    ratBox.innerHTML =
+        `<strong style="color:red;">✗ Incorrect!</strong><br><br>` +
+        `<strong>Your answer:</strong> ${selected}<br>` +
+        `<strong>Correct answer:</strong> ${correct}<br><br>` +
+        cleanRationale;
+
+    ratBox.style.display = 'block';
+}
+           
+    // Dynamically update the scoreboard text numbers on your screen instantly
+    document.getElementById('scoreCounter').innerText = totalCorrectAnswers;
+    document.getElementById('attemptCounter').innerText = totalUserAttempts;
+}
+
+
+        // 4. LOGIC: Live filtering/searching
+// UPDATE TOPICS BASED ON SELECTED SUBJECT
+function updateTopicFilter() {
+    const selectedSubject = document.getElementById('subjectFilter').value;
+    const topicFilter = document.getElementById('topicFilter');
+
+    const filteredTopics = [...new Set(
+        supabaseQuestions
+            .filter(q =>
+                selectedSubject === '' ||
+                q.subject === selectedSubject
+            )
+            .map(q => q.topic)
+            .filter(topic => topic && topic.trim() !== '')
+    )].sort();
+
+    topicFilter.innerHTML = '<option value="">All Topics</option>';
+
+    filteredTopics.forEach(topic => {
+        const option = document.createElement('option');
+        option.value = topic;
+        option.textContent = topic;
+        topicFilter.appendChild(option);
+    });
+}
+function handleSearch() {
+    const searchTerm = document.getElementById('searchBar').value.trim().toLowerCase();
+    const selectedTopic = document.getElementById('topicFilter').value;
+    const selectedSubject = document.getElementById('subjectFilter').value.trim();    
+    filteredQuestions = supabaseQuestions
+        .filter(q => {
+            const matchesSearch =
+                (q.question || '').toLowerCase().includes(searchTerm) ||
+                (q.rationale || '').toLowerCase().includes(searchTerm) ||
+                (q.subject || '').toLowerCase().includes(searchTerm) ||
+                (q.topic || '').toLowerCase().includes(searchTerm);
+
+            const matchesTopic =
+                selectedTopic === '' || q.topic === selectedTopic;
+const matchesSubject =
+    selectedSubject === '' ||
+    (typeof q.subject === 'string' && q.subject.trim() === selectedSubject);
+            return matchesSearch && matchesTopic && matchesSubject;
+})
+        .map(q => {
+            let correctAnswer = q.correct_answer;
+
+            if (correctAnswer) {
+                correctAnswer = correctAnswer.trim().toUpperCase();
+
+                if (correctAnswer === 'A') correctAnswer = q.choice_a;
+                else if (correctAnswer === 'B') correctAnswer = q.choice_b;
+                else if (correctAnswer === 'C') correctAnswer = q.choice_c;
+                else if (correctAnswer === 'D') correctAnswer = q.choice_d;
+            }
+
+            return {
+                id: q.id,
+                question: q.question,
+                options: [
+                    q.choice_a,
+                    q.choice_b,
+                    q.choice_c,
+                    q.choice_d
+                ],
+                correctAnswer: correctAnswer,
+                rationale: q.rationale
+            };
+        });
+// Populate Question Count dynamically
+const questionCountSelect = document.getElementById('questionCount');
+
+// Remember the user's current selection
+const previousQuestionCount = questionCountSelect.value;
+
+const totalQuestions = supabaseQuestions.length;
+
+const countOptions = [20, 50, 100, 200, 500, 1000]
+    .filter(count => count < totalQuestions);
+
+countOptions.push(totalQuestions);
+
+// Rebuild the dropdown
+questionCountSelect.innerHTML =
+    '<option value="0">All Questions</option>';
+
+countOptions.forEach(count => {
+    const option = document.createElement('option');
+    option.value = count;
+    option.textContent = count + ' Questions';
+    questionCountSelect.appendChild(option);
+});
+
+// Restore the user's previous selection
+if (
+    previousQuestionCount &&
+    [...questionCountSelect.options].some(
+        option => option.value === previousQuestionCount
+    )
+) {
+    questionCountSelect.value = previousQuestionCount;
+} else {
+    questionCountSelect.value = '0';
+}
+
+currentPage = 1;
+renderQuestions();
+}
+
+// STUDY PRIORITY - START TOPIC QUIZ
+function startPriorityQuiz(subject, topic) {
+    console.log("START PRIORITY QUIZ:", subject, topic);
+
+    const subjectFilter = document.getElementById('subjectFilter');
+    const topicFilter = document.getElementById('topicFilter');
+    const questionCount = document.getElementById('questionCount');
+
+    if (!subjectFilter || !topicFilter || !questionCount) {
+        alert("Quiz setup controls could not be found.");
+        return;
+    }
+
+    // Set the selected Subject and Topic
+    subjectFilter.value = subject;
+    topicFilter.value = topic;
+
+    // Study all available questions for this topic
+    questionCount.value = '0';
+
+    // Launch the existing quiz engine
+    startQuiz();
+}
+
+// START QUIZ
+function startQuiz() {
+console.log("START QUIZ FUNCTION IS RUNNING");
+    document.querySelector('.quiz-setup-title').style.display = 'none';
+    document.querySelector('.quiz-setup-subtitle').style.display = 'none';
+    document.querySelector('.quiz-setup-panel').style.display = 'none';
+    const selectedSubject = document.getElementById('subjectFilter').value;
+    const selectedTopic = document.getElementById('topicFilter').value;
+    const questionCount = document.getElementById('questionCount').value;
+    const quizInfo = document.getElementById('quiz-info');
+
+    quizInfo.textContent =
+        (selectedSubject || 'All Subjects') +
+        ' • ' +
+        (selectedTopic || 'All Topics') +
+        ' • ' +
+        (questionCount === '0' ? 'All Questions' : questionCount + ' Questions');
+
+    applyQuestionCount();
+
+    window.scrollTo(0, 0);
+}
+// 4B. LOGIC: Question Count & Randomization
+function applyQuestionCount() {
+    const count = parseInt(document.getElementById('questionCount').value);
+
+  // Rebuild the filtered list from the full Supabase question bank
+handleSearch();
+
+// Start with the questions currently selected by search/topic
+let availableQuestions = [...filteredQuestions];
+
+    // Randomize the questions
+    for (let i = availableQuestions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [availableQuestions[i], availableQuestions[j]] =
+        [availableQuestions[j], availableQuestions[i]];
+    }
+
+    // If 0 = All Questions, keep everything
+    if (count > 0) {
+        availableQuestions = availableQuestions.slice(0, count);
+    }
+
+    filteredQuestions = availableQuestions;
+
+    currentPage = 1;
+    renderQuestions();
+
+    window.scrollTo(0, 0);
+}
+        // 5. LOGIC: Page Navigation
+        function changePage(direction) {
+            currentPage += direction;
+            renderQuestions();
+            window.scrollTo(0,0);
+        }
+
+        function updatePaginationControls() {
+            const totalPages = Math.ceil(filteredQuestions.length / itemsPerPage) || 1;
+            document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+        }
+
+        // Initial Load
+        renderQuestions();
+document.getElementById('finishQuizBtn').addEventListener('click', async function() {
+  // Grab the scores from your existing counters
+  const finalScore = parseInt(document.getElementById('scoreCounter').innerText) || 0;
+  const finalAttempts = parseInt(document.getElementById('attemptCounter').innerText) || 0;
+  const messageBox = document.getElementById('motivationalMessage');
+
+  // Prevent calculation errors if they haven't answered anything
+  const percentage = finalAttempts > 0 ? (finalScore / finalAttempts) * 100 : 0;
+
+const finalResults = document.getElementById('finalResults');
+const finalScoreDisplay = document.getElementById('finalScoreDisplay');
+const finalPercentageDisplay = document.getElementById('finalPercentageDisplay');
+const finalPerformanceDisplay = document.getElementById('finalPerformanceDisplay');
+const finalAnsweredDisplay = document.getElementById('finalAnsweredDisplay');
+const finalCorrectDisplay = document.getElementById('finalCorrectDisplay');
+const finalIncorrectDisplay = document.getElementById('finalIncorrectDisplay');
+
+
+finalScoreDisplay.innerText = `Score: ${finalScore} / ${finalAttempts}`;
+finalAnsweredDisplay.innerText = `Questions Answered: ${finalAttempts}`;
+finalCorrectDisplay.innerText = `Correct Answers: ${finalScore}`;
+finalIncorrectDisplay.innerText = `Incorrect Answers: ${finalAttempts - finalScore}`;
+finalPercentageDisplay.innerText = `Percentage: ${percentage.toFixed(1)}%`;
+finalResults.style.display = 'block';
+
+
+  // Automatically pick the right message based on performance
+  if (percentage >= 85) {
+    finalPerformanceDisplay.innerText = 'Performance: Outstanding!';
+    finalPerformanceDisplay.style.color = '#28521c';
+    messageBox.innerText = "✨ Outstanding! You are well on your way to topnotching the LET! Keep it up, Future Licensed Professional Teacher!-Miss RAAL 👩‍🏫👨‍🏫";
+    messageBox.style.color = "#155724";
+    messageBox.style.backgroundColor = "#d4edda"; // Light Green
+    messageBox.style.border = "1px solid #c3e6cb";
+ } else if (percentage >= 75) {
+    finalPerformanceDisplay.innerText = 'Performance: Great Job!';
+    finalPerformanceDisplay.style.color = '#004085';
+    messageBox.innerText = "🎉 Great job! You passed this reviewer! Keep refining your weak areas. Your LPT title is waiting for you!- Miss RAAL✨";
+    messageBox.style.color = "#004085";
+    messageBox.style.backgroundColor = "#cce5ff"; // Light Blue
+    messageBox.style.border = "1px solid #b8daff";
+ } else {
+    finalPerformanceDisplay.innerText = 'Performance: Needs Improvement';
+    finalPerformanceDisplay.style.color = '#842029';
+    messageBox.innerText = "💪 Don't give up! Every mistake is a lesson learned. Review your wrong answers and try again. You CAN pass the LET!-Miss RAAL 📖";
+    messageBox.style.color = "#721c24";
+    messageBox.style.backgroundColor = "#f8d7da"; // Light Red
+    messageBox.style.border = "1px solid #f5c6cb";
+  }
+
+  // Reveal the message box on screen
+  messageBox.style.display = "block";
+
+  // Hide the finish button so they can't spam it
+  this.style.display = "none";
+
+  // Show Back to Home after quiz completion
+  const homeButton = document.getElementById('homeButton');
+  if (homeButton) {
+      homeButton.style.display = 'block';
+  }
+// Save quiz attempt to Supabase
+const attemptSubject = document.getElementById('subjectFilter').value || 'All Subjects';
+const attemptTopic = document.getElementById('topicFilter').value || 'All Topics';
+
+const { data: { user }, error: userError } = await _supabase.auth.getUser();
+
+if (userError || !user) {
+    console.error("AUTH USER ERROR:", userError);
+    return;
+}
+
+_supabase
+  .from('quiz_attempts')
+  .insert([{
+    session_id: Date.now().toString(),
+    user_id: user.id,
+    subject: attemptSubject,
+    topic: attemptTopic,
+    score: finalScore,
+    total_questions: finalAttempts,
+    correct_answers: finalScore,
+    incorrect_answers: finalAttempts - finalScore,
+    percentage: percentage
+  }])
+  .then(({ error }) => {
+    if (error) {
+      console.error("Failed to save quiz attempt:", error);
+    } else {
+      console.log("Quiz attempt saved successfully.");
+    }
+  });
+});
+
+// BACK TO HOME BUTTON
+document.getElementById('homeButton').addEventListener('click', function() {
+    window.location.reload();
+});
+
+
+// RETRY MISTAKES BUTTON
+document.getElementById('retryMistakesBtn').addEventListener('click', function() {
+
+    // Make a copy of the mistakes before clearing the array
+    const mistakesToRetry = [...incorrectQuestions];
+
+    if (mistakesToRetry.length === 0) {
+        alert('There are no mistakes to retry.');
+        return;
+    }
+
+    // Rebuild the quiz using the original Supabase questions
+    // First try the stored question ID, then fall back to question text.
+   filteredQuestions = mistakesToRetry.map(item => {
+
+    let q = null;
+
+    // Find the original Supabase question
+    if (item.rationaleId) {
+        const questionId = String(item.rationaleId).replace('rat-', '');
+
+        q = supabaseQuestions.find(
+            question => String(question.id) === questionId
+        );
+    }
+
+    // Fallback: find it using the question text
+    if (!q && item.question) {
+        q = supabaseQuestions.find(
+            question =>
+                String(question.question).trim() ===
+                String(item.question).trim()
+        );
+    }
+
+    // Convert it into the SAME format used by the normal quiz
+    if (q) {
+        return {
+            id: q.id,
+            question: q.question,
+            options: [
+                q.choice_a,
+                q.choice_b,
+                q.choice_c,
+                q.choice_d
+            ],
+            correctAnswer: item.correct || q.correctAnswer,
+            rationale: q.rationale
+        };
+    }
+
+    return null;
+
+}).filter(q => q !== null);
+
+    // Make sure we actually recovered the questions
+    if (filteredQuestions.length === 0) {
+        alert(
+            'The mistake was recorded, but the original question could not be found.'
+        );
+        return;
+    }
+
+    // Reset quiz state for the retry
+    currentPage = 1;
+    totalCorrectAnswers = 0;
+    totalUserAttempts = 0;
+
+    // Clear old mistakes so only NEW mistakes from this retry are recorded
+    incorrectQuestions = [];
+
+    // Hide final results
+    const finalResults = document.getElementById('finalResults');
+
+    if (finalResults) {
+        finalResults.style.display = 'none';
+    }
+
+    // Hide Back to Home during a retry
+    const homeButton = document.getElementById('homeButton');
+    if (homeButton) {
+        homeButton.style.display = 'none';
+    }
+
+    // Hide motivational message
+    const motivationalMessage =
+        document.getElementById('motivationalMessage');
+
+    if (motivationalMessage) {
+        motivationalMessage.style.display = 'none';
+    }
+
+    // Hide mistake review
+    const reviewContainer =
+        document.getElementById('mistakesReviewContainer');
+
+    if (reviewContainer) {
+        reviewContainer.style.display = 'none';
+        reviewContainer.innerHTML = '';
+    }
+
+    // Show quiz
+    const quizContainer =
+        document.getElementById('quiz-container');
+
+    if (quizContainer) {
+        quizContainer.style.display = 'block';
+    }
+
+    // Show Finish Quiz button
+    const finishButton =
+        document.getElementById('finishQuizBtn');
+
+    if (finishButton) {
+        finishButton.style.display = 'block';
+    }
+
+    // Hide Retry button during the retry
+    this.style.display = 'none';
+
+    // Render the recovered mistake questions
+    renderQuestions();
+
+    // Return to the quiz
+    if (quizContainer) {
+        quizContainer.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+});
+
+// REVIEW MISTAKES BUTTON
+document.getElementById('reviewMistakesBtn').addEventListener('click', function() {
+
+    const reviewContainer = document.getElementById('mistakesReviewContainer');
+
+    if (incorrectQuestions.length === 0) {
+        reviewContainer.innerHTML = `
+            <div class="rationale feedback-correct">
+                <strong style="color: green;">🎉 Excellent!</strong><br><br>
+                You have no incorrect answers to review.
+            </div>
+        `;
+        reviewContainer.style.display = 'block';
+        return;
+    }
+
+    let reviewHTML = `
+        <h2 style="text-align: center;">📚 Review Your Mistakes</h2>
+        <p style="text-align: center;">
+            You have ${incorrectQuestions.length} question(s) to review.
+        </p>
+    `;
+
+    incorrectQuestions.forEach((item, index) => {
+
+        reviewHTML += `
+            <div class="question-box" style="margin-top: 20px;">
+
+                <h3>Question ${index + 1}: ${item.question}</h3>
+		<div style="margin-top: 10px;">
+    <strong>Choices:</strong>
+    <ul style="text-align: left;">
+        ${(item.options || []).map((option, i) =>
+            '<li>' + String.fromCharCode(65 + i) + '. ' + option + '</li>'
+        ).join('')}
+    </ul>
+</div>
+
+            <div class="rationale feedback-incorrect" style="display: block;">
+                    <strong style="color: red;">✗ Your answer:</strong>
+                    ${item.selected}
+                    <br><br>
+
+                    <strong style="color: green;">✓ Correct answer:</strong>
+                    ${item.correct}
+                    <br><br>
+
+                    <strong>📖 Rationale:</strong><br>
+                    ${item.rationale || 'No rationale available.'}
+                </div>
+
+            </div>
+        `;
+    });
+
+    reviewContainer.innerHTML = reviewHTML;
+    reviewContainer.style.display = 'block';
+
+    reviewContainer.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+
+});
+// ==========================================
+// QUIZ HISTORY
+// ==========================================
+async function loadQuizHistory() {
+    const historyPanel = document.getElementById('quizHistoryPanel');
+
+    historyPanel.style.display = 'block';
+    historyPanel.innerHTML = `
+        <h2 style="text-align:center;">📊 Quiz History</h2>
+        <p style="text-align:center;">Loading your previous quiz attempts...</p>
+    `;
+
+    const { data, error } = await _supabase
+        .from('quiz_attempts')
+        .select(`
+            subject,
+            topic,
+            score,
+            total_questions,
+            correct_answers,
+            incorrect_answers,
+            percentage,
+            completed_at
+        `)
+        .order('completed_at', { ascending: false })
+        .limit(50);
+
+    if (error) {
+        console.error('QUIZ HISTORY ERROR:', error);
+
+        historyPanel.innerHTML = `
+            <h2 style="text-align:center;">📊 Quiz History</h2>
+            <p style="color:red; text-align:center;">
+                Unable to load quiz history.
+            </p>
+        `;
+
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        historyPanel.innerHTML = `
+            <h2 style="text-align:center;">📊 Quiz History</h2>
+            <p style="text-align:center;">
+                No previous quiz attempts found.
+            </p>
+        `;
+
+        return;
+    }
+
+// ==========================================
+// PROGRESS SUMMARY
+// ==========================================
+const quizzesTaken = data.length;
+
+const questionsAnswered = data.reduce(
+    (sum, attempt) => sum + Number(attempt.total_questions || 0),
+    0
+);
+
+const averageScore = data.length
+    ? data.reduce(
+        (sum, attempt) => sum + Number(attempt.percentage || 0),
+        0
+      ) / data.length
+    : 0;
+
+const bestScore = data.length
+    ? Math.max(
+        ...data.map(attempt => Number(attempt.percentage || 0))
+      )
+    : 0;
+
+const latestAttempt = data[0];
+
+const latestScore = latestAttempt
+    ? `${latestAttempt.score || 0} / ${latestAttempt.total_questions || 0}`
+    : '—';
+
+// STEP 15: Calculate performance by Subject and Topic
+const performanceMap = {};
+
+data.forEach(attempt => {
+    const subject = attempt.subject || 'Unknown Subject';
+    const topic = attempt.topic || 'Unknown Topic';
+    const key = subject + '|||'+ topic;
+
+    if (!performanceMap[key]) {
+        performanceMap[key] = {
+            subject: subject,
+            topic: topic,
+            quizzes: 0,
+            questions: 0,
+            correct: 0
+        };
+    }
+
+    performanceMap[key].quizzes += 1;
+    performanceMap[key].questions += Number(attempt.total_questions) || 0;
+    performanceMap[key].correct += Number(attempt.correct_answers) || 0;
+});
+
+const performanceData = Object.values(performanceMap);
+// STEP 17: Calculate Study Priority
+const studyPriorityData = performanceData.map(item => {
+    const accuracy = item.questions > 0
+        ? (item.correct / item.questions) * 100
+        : 0;
+
+    let priority;
+    let status;
+
+    if (accuracy < 60) {
+        priority = "🔴 High Priority";
+        status = "Needs Immediate Review";
+    } else if (accuracy < 80) {
+        priority = "🟡 Needs Practice";
+        status = "Needs More Practice";
+    } else {
+        priority = "🟢 Strong";
+        status = "Good Performance";
+    }
+
+    return {
+        ...item,
+        accuracy,
+        priority,
+        status
+    };
+});
+
+// STEP 18: Calculate Progress Trends
+
+const trendData = data
+    .filter(attempt => attempt.completed_at)
+    .map(attempt => ({
+        ...attempt,
+        trendPercentage: Number(attempt.percentage || 0)
+    }))
+    .sort((a, b) =>
+        new Date(a.completed_at) - new Date(b.completed_at)
+    );
+
+let firstScore = 0;
+let latestTrendScore = 0;
+let recentAverage = 0;
+let improvement = 0;
+let trendLabel = "📝 Not enough data";
+
+if (trendData.length >= 2) {
+
+    firstScore = trendData[0].trendPercentage;
+
+    latestTrendScore =
+        trendData[trendData.length - 1].trendPercentage;
+
+    const recentAttempts = trendData.slice(-5);
+
+    recentAverage =
+        recentAttempts.reduce(
+            (sum, attempt) =>
+                sum + attempt.trendPercentage,
+            0
+        ) / recentAttempts.length;
+
+    improvement = latestTrendScore - firstScore;
+
+    if (improvement >= 5) {
+        trendLabel = "📈 Improving";
+    } else if (improvement <= -5) {
+        trendLabel = "📉 Declining";
+    } else {
+        trendLabel = "➡️ Stable";
+    }
+
+} else if (trendData.length === 1) {
+
+    firstScore = trendData[0].trendPercentage;
+    latestTrendScore = trendData[0].trendPercentage;
+    recentAverage = trendData[0].trendPercentage;
+    trendLabel = "📝 First Recorded Attempt";
+}
+
+let historyHTML = `
+        <h2 style="text-align:center;">📊 Quiz History</h2>
+<div style="
+    margin:20px 0;
+    padding:20px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    background:#f8f8f8;
+">
+    <h3 style="text-align:center;">📈 Performance by Subject & Topic</h3>
+
+    <div style="overflow-x:auto;">
+        <table style="
+            width:100%;
+            border-collapse:collapse;
+            margin-top:15px;
+            background:white;
+        ">
+            <thead>
+                <tr style="background:#555; color:white;">
+                    <th style="padding:10px; border:1px solid #ddd;">Subject</th>
+                    <th style="padding:10px; border:1px solid #ddd;">Topic</th>
+                    <th style="padding:10px; border:1px solid #ddd;">Quizzes</th>
+                    <th style="padding:10px; border:1px solid #ddd;">Questions</th>
+                    <th style="padding:10px; border:1px solid #ddd;">Accuracy</th>
+		    <th style="padding:10px; border:1px solid #ddd;">Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                ${performanceData.map(item => {
+                    const accuracy = item.questions > 0
+                        ? (item.correct / item.questions) * 100
+                        : 0;
+
+                    return '<tr>' +
+                        '<td style="padding:10px; border:1px solid #ddd;">' +
+                        item.subject +
+                        '</td>' +
+
+                        '<td style="padding:10px; border:1px solid #ddd;">' +
+                        item.topic +
+                        '</td>' +
+
+                        '<td style="padding:10px; border:1px solid #ddd; text-align:center;">' +
+                        item.quizzes +
+                        '</td>' +
+
+                        '<td style="padding:10px; border:1px solid #ddd; text-align:center;">' +
+                        item.questions +
+                        '</td>' +
+
+                        '<td style="padding:10px; border:1px solid #ddd; text-align:center; font-weight:bold;">' +
+                        accuracy.toFixed(2) +
+                        '%' +
+                        '</td>' +
+
+'<td style="padding:10px; border:1px solid #ddd; text-align:center; font-weight:bold;">' +
+(accuracy >= 80 ? 'Excellent' : accuracy >= 60 ? 'Good' : 'Needs Review') +
+'</td>' +
+
+
+                        '</tr>';
+                }).join('')}
+            </tbody>
+        </table>
+    </div>
+</div>
+<h3 style="text-align:center; margin-top:30px;">📚 Study Priority</h3>
+
+<div style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    gap:10px;
+    margin:20px 0;
+">
+    ${studyPriorityData
+        .slice()
+        .sort((a, b) => a.accuracy - b.accuracy)
+        .map(item => `
+            <div style="
+                padding:15px;
+                background:#f8f8f8;
+                border:1px solid #ddd;
+                border-radius:8px;
+                text-align:center;
+            ">
+                <div style="font-size:14px; font-weight:bold;">
+                    ${item.priority}
+                </div>
+
+                <div style="font-size:15px; margin-top:8px;">
+                    ${item.subject} — ${item.topic}
+                </div>
+
+                <div style="font-size:24px; font-weight:bold; margin-top:8px;">
+                    ${item.accuracy.toFixed(2)}%
+                </div>
+
+                <div style="font-size:13px; margin-top:5px;">
+                    ${item.status}
+                </div>
+<button
+    type="button"
+    onclick="startPriorityQuiz('${item.subject}', '${item.topic}')"
+    style="
+        margin-top:12px;
+        padding:8px 12px;
+        font-size:13px;
+        font-weight:bold;
+        background:#198754;
+        color:white;
+        border:none;
+        border-radius:6px;
+        cursor:pointer;
+    "
+>
+    STUDY THIS TOPIC
+</button>
+            </div>
+        `)
+          .join('')}
+</div>
+
+<h3 style="text-align:center; margin-top:30px;">
+    📈 Progress Trends
+</h3>
+
+<div style="
+    margin:20px 0;
+    padding:20px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    background:#f8f8f8;
+">
+
+    <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+        gap:10px;
+    ">
+
+        <div style="
+            padding:15px;
+            background:white;
+            border:1px solid #ddd;
+            border-radius:8px;
+            text-align:center;
+        ">
+            <div style="font-size:13px;">First Score</div>
+            <div style="font-size:24px; font-weight:bold;">
+                ${firstScore.toFixed(2)}%
+            </div>
+        </div>
+
+        <div style="
+            padding:15px;
+            background:white;
+            border:1px solid #ddd;
+            border-radius:8px;
+            text-align:center;
+        ">
+            <div style="font-size:13px;">Latest Score</div>
+            <div style="font-size:24px; font-weight:bold;">
+                ${latestTrendScore.toFixed(2)}%
+            </div>
+        </div>
+
+        <div style="
+            padding:15px;
+            background:white;
+            border:1px solid #ddd;
+            border-radius:8px;
+            text-align:center;
+        ">
+            <div style="font-size:13px;">Improvement</div>
+            <div style="font-size:24px; font-weight:bold;">
+                ${improvement >= 0 ? '+' : ''}${improvement.toFixed(2)}%
+            </div>
+        </div>
+
+        <div style="
+            padding:15px;
+            background:white;
+            border:1px solid #ddd;
+            border-radius:8px;
+            text-align:center;
+        ">
+            <div style="font-size:13px;">Recent Average</div>
+            <div style="font-size:24px; font-weight:bold;">
+                ${recentAverage.toFixed(2)}%
+            </div>
+        </div>
+
+    </div>
+
+    <div style="
+        margin-top:20px;
+        padding:15px;
+        text-align:center;
+        font-size:18px;
+        font-weight:bold;
+    ">
+        ${trendLabel}
+    </div>
+
+</div>
+
+<h3 style="text-align:center; margin-top:30px;">
+    🎯 Improvement Tracking
+</h3>
+
+<div style="
+    margin:20px 0;
+    padding:20px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    background:#f8f8f8;
+">
+
+    <div style="
+        text-align:center;
+        font-size:18px;
+        font-weight:bold;
+        margin-bottom:15px;
+    ">
+        ${
+            improvement > 0
+                ? '📈 You are improving!'
+                : improvement < 0
+                    ? '📉 Your performance has declined.'
+                    : '➡️ Your performance is stable.'
+        }
+    </div>
+
+    <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+        gap:10px;
+    ">
+
+        <div style="
+            padding:15px;
+            background:white;
+            border:1px solid #ddd;
+            border-radius:8px;
+            text-align:center;
+        ">
+            <div style="font-size:13px;">
+                Attempts Tracked
+            </div>
+
+            <div style="
+                font-size:24px;
+                font-weight:bold;
+                margin-top:5px;
+            ">
+                ${trendData.length}
+            </div>
+        </div>
+
+        <div style="
+            padding:15px;
+            background:white;
+            border:1px solid #ddd;
+            border-radius:8px;
+            text-align:center;
+        ">
+            <div style="font-size:13px;">
+                Overall Improvement
+            </div>
+
+            <div style="
+                font-size:24px;
+                font-weight:bold;
+                margin-top:5px;
+            ">
+                ${improvement >= 0 ? '+' : ''}${improvement.toFixed(2)}%
+            </div>
+        </div>
+
+        <div style="
+            padding:15px;
+            background:white;
+            border:1px solid #ddd;
+            border-radius:8px;
+            text-align:center;
+        ">
+            <div style="font-size:13px;">
+                Recent Average
+            </div>
+
+            <div style="
+                font-size:24px;
+                font-weight:bold;
+                margin-top:5px;
+            ">
+                ${recentAverage.toFixed(2)}%
+            </div>
+        </div>
+
+        <div style="
+            padding:15px;
+            background:white;
+            border:1px solid #ddd;
+            border-radius:8px;
+            text-align:center;
+        ">
+            <div style="font-size:13px;">
+                Current Trend
+            </div>
+
+            <div style="
+                font-size:18px;
+                font-weight:bold;
+                margin-top:8px;
+            ">
+                ${trendLabel}
+            </div>
+        </div>
+
+    </div>
+
+    <div style="
+        margin-top:15px;
+        padding:12px;
+        background:white;
+        border-radius:8px;
+        text-align:center;
+        font-size:14px;
+    ">
+        ${
+            improvement > 0
+                ? 'Your latest performance is ' + improvement.toFixed(2) + ' percentage points higher than your first recorded attempt. Keep reviewing! You can do it!-Miss RAAL'
+                : improvement < 0
+                    ? 'Your latest performance is ' + Math.abs(improvement).toFixed(2) + ' percentage points lower than your first recorded attempt. Focus on your weaker areas and keep reviewing. You can do it!-Miss RAAL'
+                    : 'Your latest performance is currently at the same level as your first recorded attempt. Keep reviewing to build improvement. You can do it!-Miss RAAL'
+        }
+    </div>
+
+</div>
+
+<h3 style="text-align:center; margin-top:30px;">
+    📊 Subject & Topic Comparison
+</h3>
+
+<div style="
+    margin:20px 0;
+    padding:20px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    background:#f8f8f8;
+">
+
+    ${
+        (() => {
+            const comparisonData = studyPriorityData
+                .filter(item =>
+                    !(item.subject === 'All Subjects' && item.topic === 'All Topics')
+                )
+                .slice()
+                .sort((a, b) => b.accuracy - a.accuracy);
+
+            if (comparisonData.length === 0) {
+                return `
+                    <div style="
+                        padding:20px;
+                        text-align:center;
+                    ">
+                        No subject/topic comparison data available yet.
+                    </div>
+                `;
+            }
+
+            const strongest = comparisonData[0];
+            const weakest = comparisonData[comparisonData.length - 1];
+
+            return `
+                <div style="
+                    display:grid;
+                    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+                    gap:10px;
+                ">
+
+                    <div style="
+                        padding:15px;
+                        background:white;
+                        border:1px solid #ddd;
+                        border-radius:8px;
+                        text-align:center;
+                    ">
+                        <div style="
+                            font-size:14px;
+                            font-weight:bold;
+                        ">
+                            🏆 Strongest Area
+                        </div>
+
+                        <div style="
+                            font-size:17px;
+                            margin-top:8px;
+                        ">
+                            ${strongest.subject} — ${strongest.topic}
+                        </div>
+
+                        <div style="
+                            font-size:24px;
+                            font-weight:bold;
+                            margin-top:8px;
+                        ">
+                            ${strongest.accuracy.toFixed(2)}%
+                        </div>
+
+                        <div style="
+                            font-size:13px;
+                            margin-top:5px;
+                        ">
+                            ${strongest.status}
+                        </div>
+                    </div>
+
+                    <div style="
+                        padding:15px;
+                        background:white;
+                        border:1px solid #ddd;
+                        border-radius:8px;
+                        text-align:center;
+                    ">
+                        <div style="
+                            font-size:14px;
+                            font-weight:bold;
+                        ">
+                            ⚠️ Weakest Area
+                        </div>
+
+                        <div style="
+                            font-size:17px;
+                            margin-top:8px;
+                        ">
+                            ${weakest.subject} — ${weakest.topic}
+                        </div>
+
+                        <div style="
+                            font-size:24px;
+                            font-weight:bold;
+                            margin-top:8px;
+                        ">
+                            ${weakest.accuracy.toFixed(2)}%
+                        </div>
+
+                        <div style="
+                            font-size:13px;
+                            margin-top:5px;
+                        ">
+                            ${weakest.status}
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="
+                    margin-top:15px;
+                    padding:12px;
+                    background:white;
+                    border-radius:8px;
+                    text-align:center;
+                    font-size:14px;
+                ">
+                    📚 Areas Compared:
+                    <strong>${comparisonData.length}</strong>
+                </div>
+            `;
+        })()
+    }
+
+</div>
+
+<h3 style="text-align:center; margin-top:30px;">
+    🧠 Advanced Performance Insights
+</h3>
+
+<div style="
+    margin:20px 0;
+    padding:20px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    background:#f8f8f8;
+">
+
+    ${
+        (() => {
+
+            const insightData = studyPriorityData
+                .filter(item =>
+                    !(item.subject === 'All Subjects' &&
+                      item.topic === 'All Topics')
+                )
+                .slice()
+                .sort((a, b) => a.accuracy - b.accuracy);
+
+            if (insightData.length === 0) {
+                return `
+                    <div style="
+                        padding:20px;
+                        text-align:center;
+                    ">
+                        No performance insights available yet.
+                    </div>
+                `;
+            }
+
+            const weakest = insightData[0];
+            const strongest = insightData[insightData.length - 1];
+
+            const averageAccuracy =
+                insightData.reduce(
+                    (sum, item) => sum + item.accuracy,
+                    0
+                ) / insightData.length;
+
+            let recommendation;
+
+            if (weakest.accuracy < 60) {
+                recommendation =
+                    'Focus your next study session on your weakest area. You can do it!-Miss RAAL';
+            } else if (weakest.accuracy < 80) {
+                recommendation =
+                    'Continue practicing your weaker areas before moving on. You can do it!-Miss RAAL';
+            } else {
+                recommendation =
+                    'Your tracked areas are strong. Continue practicing to maintain mastery. You can do it!-Miss RAAL';
+            }
+
+            return `
+                <div style="
+                    display:grid;
+                    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+                    gap:10px;
+                ">
+
+                    <div style="
+                        padding:15px;
+                        background:white;
+                        border:1px solid #ddd;
+                        border-radius:8px;
+                        text-align:center;
+                    ">
+                        <div style="
+                            font-size:13px;
+                            font-weight:bold;
+                        ">
+                            ⚠️ Main Focus Area
+                        </div>
+
+                        <div style="
+                            font-size:16px;
+                            margin-top:8px;
+                        ">
+                            ${weakest.subject} — ${weakest.topic}
+                        </div>
+
+                        <div style="
+                            font-size:24px;
+                            font-weight:bold;
+                            margin-top:8px;
+                        ">
+                            ${weakest.accuracy.toFixed(2)}%
+                        </div>
+                    </div>
+
+                    <div style="
+                        padding:15px;
+                        background:white;
+                        border:1px solid #ddd;
+                        border-radius:8px;
+                        text-align:center;
+                    ">
+                        <div style="
+                            font-size:13px;
+                            font-weight:bold;
+                        ">
+                            💪 Strongest Area
+                        </div>
+
+                        <div style="
+                            font-size:16px;
+                            margin-top:8px;
+                        ">
+                            ${strongest.subject} — ${strongest.topic}
+                        </div>
+
+                        <div style="
+                            font-size:24px;
+                            font-weight:bold;
+                            margin-top:8px;
+                        ">
+                            ${strongest.accuracy.toFixed(2)}%
+                        </div>
+                    </div>
+
+                    <div style="
+                        padding:15px;
+                        background:white;
+                        border:1px solid #ddd;
+                        border-radius:8px;
+                        text-align:center;
+                    ">
+                        <div style="
+                            font-size:13px;
+                            font-weight:bold;
+                        ">
+                            📊 Average Area Accuracy
+                        </div>
+
+                        <div style="
+                            font-size:24px;
+                            font-weight:bold;
+                            margin-top:8px;
+                        ">
+                            ${averageAccuracy.toFixed(2)}%
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="
+                    margin-top:15px;
+                    padding:15px;
+                    background:white;
+                    border-radius:8px;
+                    text-align:center;
+                ">
+                    <div style="
+                        font-size:15px;
+                        font-weight:bold;
+                    ">
+                        🎯 Recommended Focus
+                    </div>
+
+                    <div style="
+                        margin-top:8px;
+                        font-size:14px;
+                    ">
+                        ${recommendation}
+                    </div>
+                </div>
+            `;
+        })()
+    }
+
+</div>
+
+<div style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+    gap:10px;
+    margin:20px 0;
+">
+
+    <div style="
+        padding:15px;
+        background:#f8f8f8;
+        border:1px solid #ddd;
+        border-radius:8px;
+        text-align:center;
+    ">
+        <div style="font-size:13px;">Quizzes Taken</div>
+        <div style="font-size:24px; font-weight:bold;">
+            ${quizzesTaken}
+        </div>
+    </div>
+
+    <div style="
+        padding:15px;
+        background:#f8f8f8;
+        border:1px solid #ddd;
+        border-radius:8px;
+        text-align:center;
+    ">
+        <div style="font-size:13px;">Questions Answered</div>
+        <div style="font-size:24px; font-weight:bold;">
+            ${questionsAnswered}
+        </div>
+    </div>
+
+    <div style="
+        padding:15px;
+        background:#f8f8f8;
+        border:1px solid #ddd;
+        border-radius:8px;
+        text-align:center;
+    ">
+        <div style="font-size:13px;">Average Score</div>
+        <div style="font-size:24px; font-weight:bold;">
+            ${averageScore.toFixed(2)}%
+        </div>
+    </div>
+
+    <div style="
+        padding:15px;
+        background:#f8f8f8;
+        border:1px solid #ddd;
+        border-radius:8px;
+        text-align:center;
+    ">
+        <div style="font-size:13px;">Best Score</div>
+        <div style="font-size:24px; font-weight:bold;">
+            ${bestScore.toFixed(2)}%
+        </div>
+    </div>
+
+    <div style="
+        padding:15px;
+        background:#f8f8f8;
+        border:1px solid #ddd;
+        border-radius:8px;
+        text-align:center;
+    ">
+        <div style="font-size:13px;">Latest Score</div>
+        <div style="font-size:24px; font-weight:bold;">
+            ${latestScore}
+        </div>
+    </div>
+
+</div>
+
+
+        <div style="overflow-x:auto;">
+        <table style="
+            width:100%;
+            border-collapse:collapse;
+            margin-top:15px;
+            background:white;
+        ">
+            <thead>
+                <tr style="background:#555; color:white;">
+                    <th style="padding:10px; border:1px solid #ddd;">Date</th>
+                    <th style="padding:10px; border:1px solid #ddd;">Subject</th>
+                    <th style="padding:10px; border:1px solid #ddd;">Topic</th>
+                    <th style="padding:10px; border:1px solid #ddd;">Score</th>
+                    <th style="padding:10px; border:1px solid #ddd;">Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    data.forEach(attempt => {
+        const date = attempt.completed_at
+            ? new Date(attempt.completed_at).toLocaleString()
+            : '—';
+
+        historyHTML += `
+            <tr>
+                <td style="padding:10px; border:1px solid #ddd;">
+                    ${date}
+                </td>
+
+                <td style="padding:10px; border:1px solid #ddd;">
+                    ${attempt.subject || '—'}
+                </td>
+
+                <td style="padding:10px; border:1px solid #ddd;">
+                    ${attempt.topic || '—'}
+                </td>
+
+                <td style="padding:10px; border:1px solid #ddd; text-align:center;">
+                    ${attempt.score || 0} / ${attempt.total_questions || 0}
+                </td>
+
+                <td style="padding:10px; border:1px solid #ddd; text-align:center;">
+                    ${Number(attempt.percentage || 0).toFixed(2)}%
+                </td>
+            </tr>
+        `;
+    });
+
+    historyHTML += `
+            </tbody>
+        </table>
+        </div>
+    `;
+
+    historyPanel.innerHTML = historyHTML;
+}
+
+
+// Connect the Quiz History button
+document.getElementById('quizHistoryBtn').addEventListener('click', loadQuizHistory);
+
+    </script>
+
+</body>
+</html>
