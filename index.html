@@ -1782,6 +1782,16 @@ async function startAuthenticatedApp(user) {
 
 async function initializeAuthentication() {
     clearLoginError();
+
+    // Allow Supabase PASSWORD_RECOVERY event to control the recovery screen.
+    const isPasswordRecovery =
+        window.location.hash.includes('type=recovery');
+
+    if (isPasswordRecovery) {
+        authLoading.style.display = 'none';
+        return;
+    }
+
     authLoading.style.display = 'block';
 
     const { data: { user }, error } = await _supabase.auth.getUser();
